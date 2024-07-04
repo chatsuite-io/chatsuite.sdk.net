@@ -1,0 +1,86 @@
+variables:
+  Major: 1
+  Minor: 0
+  Rev: 0
+  BuildConfiguration: Release
+
+name: $(Major).$(Minor).$(Rev)
+pr: none
+trigger:
+  batch: true
+  tags:
+   include:
+     - refs/tags/*
+   exclude:
+      - refs/tags/pre*
+  paths:
+    exclude:
+      - README.md
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: UseDotNet@2
+  displayName: 'Installing .NET SDK 8.0'
+  inputs:
+    packageType: sdk
+    version: 8.0.302
+    installationPath: $(Agent.ToolsDirectory)/dotnet
+
+- task: DotNetCoreCLI@2
+  displayName: 'Building'
+  inputs:
+    command: 'build'
+    projects: '**/ChatSuite.Sdk.csproj'
+    arguments: '--configuration $(BuildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Running unit tests'
+  continueOnError: false
+  inputs:
+    command: 'test'
+    projects: '**/ChatSuite.Sdk.UnitTests.csproj'
+    arguments: '--configuration $(BuildConfiguration)'
+    testRunTitle: 'Unit tests'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Running integration tests'
+  continueOnError: true
+  inputs:
+    command: 'test'
+    projects: '**/ChatSuite.Sdk.IntegrationTests.csproj'
+    arguments: '--configuration $(BuildConfiguration)'
+    testRunTitle: 'Integration tests'
+
+    
+- task: DotNetCoreCLI@2
+  displayName: 'Publishing'
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: '**/ChatSuite.Sdk.csproj'
+    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Dropping'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+
+- task: NuGetCommand@2
+  displayName: 'Packing'
+  inputs:
+    command: 'pack'
+    packagesToPack: '**/ChatSuite.Sdk.csproj'
+    versioningScheme: 'byEnvVar'
+    versionEnvVar: 'Build.BuildNumber'
+- task: NuGetCommand@2
+  displayName: 'Pushing to nuget.org'
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'external'
+    publishFeedCredentials: 'NuGet'
+    allowPackageConflicts: true

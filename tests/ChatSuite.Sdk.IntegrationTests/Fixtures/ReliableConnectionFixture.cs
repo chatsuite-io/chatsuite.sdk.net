@@ -1,0 +1,97 @@
+﻿using ChatSuite.Sdk.Core;
+using ChatSuite.Sdk.Extensions;
+using ChatSuite.Sdk.Extensions.DependencyInjection;
+using ChatSuite.Sdk.IntegrationTests.Settings;
+using ChatSuite.Sdk.Plugin.Security;
+using Microsoft.Extensions.Configuration;
+using Xunit.Microsoft.DependencyInjection;
+
+namespace ChatSuite.Sdk.IntegrationTests.Fixtures;
+
+public class ReliableConnectionFixture : TestBedFixture
+{
+	private IClient? _client;
+	private readonly Dictionary<string, object> _data = new();
+
+	public Dictionary<string, object> Data => _data;
+
+	public async Task<IClient?> GetClientAsync(ITestOutputHelper testOutputHelper, bool sustainInFixture = true, ConnectionParameters? connectionParameters = null, params IEvent[] events )
+	{
+		if (_client is null || !sustainInFixture)
+		{
+			var chatClient = GetService<IPlugin<ConnectionParameters, IClient?>>(testOutputHelper);
+			var connectionSettings = GetService<IOptions<ConnectionSettings>>(testOutputHelper)!;
+			var concludedConnectionParameters = connectionParameters ?? new ConnectionParameters
+			{
+				Id = Guid.NewGuid().ToString(),
+				User = "userA",
+				Metadata = new()
+				{
+					ClientId = Guid.NewGuid().ToString(),
+					Suite = "test",
+					SpaceId = "testchatsuite"
+				}
+			};
+			concludedConnectionParameters.Endpoint = connectionSettings.Value.Endpoint;
+			concludedConnectionParameters.SecretKey = connectionSettings.Value.SecretKey;
+			_client = await chatClient!.BuildAsync(concludedConnectionParameters!, error =>
+			{
+				testOutputHelper.WriteLine($"{error}");
+			});
+			var userConnectedEvent = new UserConnected(testOutputHelper);
+			var userDisconnectedEvent = new UserDisconnected(testOutputHelper);
+			_client!.Closed += ex =>
+			{
+				testOutputHelper.WriteLine($"Exception: {ex?.Message}");
+				return Task.CompletedTask;
+			};
+			_client!
+				.RegisterEvent(userConnectedEvent)
+				.RegisterEvent(userDisconnectedEvent);
+			foreach(var @event in events)
+			{
+				_client!.RegisterEvent(@event);
+			}
+		}
+		return _client;
+	}
+
+	protected override void AddServices(IServiceCollection services, IConfiguration? configuration) => services
+		.Configure<EntraIdTokenAcquisitionSettings>(configuration!.GetSection(nameof(EntraIdTokenAcquisitionSettings)))
+		.AddChatSuiteClient();
+
+	protected override ValueTask DisposeAsyncCore() => _client?.DisposeAsync() ?? new();
+
+	protected override IEnumerable<TestAppSettings> GetTestAppSettings()
+	{
+		yield return new() { Filename = "appsettings.json", IsOptional = false };
+	}
+
+	private class UserConnected(ITestOutputHelper testOutputHelper) : IEvent
+	{
+		public string? Target => TargetEvent.OnUserConnected.ToString();
+		public bool Connected { get; private set; }
+
+		public Task Handle(object argument)
+		{
+			ArgumentNullException.ThrowIfNullOrEmpty(Target, nameof(Target));
+			testOutputHelper.WriteLine("@argument", argument);
+			Connected = true;
+			return Task.CompletedTask;
+		}
+	}
+
+	private class UserDisconnected(ITestOutputHelper testOutputHelper) : IEvent
+	{
+		public string? Target => TargetEvent.OnUserDisconnected.ToString();
+		public bool Disconnected { get; private set; }
+
+		public Task Handle(object argument)
+		{
+			ArgumentNullException.ThrowIfNullOrEmpty(Target, nameof(Target));
+			testOutputHelper.WriteLine("@argument", argument);
+			Disconnected = true;
+			return Task.CompletedTask;
+		}
+	}
+}

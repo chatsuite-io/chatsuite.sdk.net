@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<package >
+  <metadata>
+    <id>ChatSuite.Sdk</id>
+    <title>ChatSuite SDK library</title>
+    <version>1.0</version>
+    <authors>Arash Sabet</authors>
+    <owners>Umplify Technologies Inc.</owners>
+    <licenseUrl>https://github.com/chatsuite-io/chatsuite.sdk.net/blob/main/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/chatsuite-io/chatsuite.sdk.net/</projectUrl>
+    <iconUrl>http://umplify.com/wp-content/uploads/2017/11/umplify_logo.png</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>This package contains the necessary classes and features to support the implementation of ChatSuite's .NET SDK library.</description>
+    <copyright>2024 - All rights reserved, Umplify Technologies Inc.</copyright>
+    <tags>chat chatsuite-sdk chatsuite serverless-chat chat-server</tags>
+  </metadata>
+</package>
