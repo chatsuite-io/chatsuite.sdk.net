@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<langVersion>latest</langVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="FluentValidation" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" />
+		<PackageReference Include="Microsoft.Extensions.Http" />
+		<PackageReference Include="Microsoft.Identity.Client" />
+		<PackageReference Include="Microsoft.Azure.Functions.Extensions" />
+		<PackageReference Include="Serilog.Extensions.Hosting" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+		<PackageReference Include="Newtonsoft.Json" />
+		<PackageReference Include="Serilog" />
+		<PackageReference Include="Serilog.Settings.Configuration" />
+		<PackageReference Include="Serilog.Extensions.Logging" />
+		<PackageReference Include="Serilog.Sinks.Console" />
+		<PackageReference Include="Serilog.Sinks.ApplicationInsights" />
+		<PackageReference Include="Polly" />
+		<PackageReference Include="Microsoft.Extensions.Http.Polly" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Core\" />
+	</ItemGroup>
+
+</Project>

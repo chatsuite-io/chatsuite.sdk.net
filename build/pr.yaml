@@ -1,0 +1,31 @@
+variables:
+  BuildConfiguration: Release
+
+name: ChatSuite.Sdk.pr$(rev:r)
+trigger: none
+pr:
+  paths:
+    include:
+      - src/*
+      - tests/*
+      - Directory.Packages.Props
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: UseDotNet@2
+  displayName: 'Installing .NET SDK 8.0'
+  inputs:
+    packageType: sdk
+    version: 8.0.302
+    installationPath: $(Agent.ToolsDirectory)/dotnet
+- task: DotNetCoreCLI@2
+  displayName: 'Building'
+  inputs:
+    command: 'build'
+    projects: |
+      **/ChatSuite.Sdk.csproj
+      **/ChatSuite.Sdk.UnitTests.csproj
+      **/ChatSuite.Sdk.IntegrationTests.csproj
+    arguments: '--configuration $(BuildConfiguration)'
+    
