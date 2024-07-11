@@ -11,11 +11,13 @@ namespace ChatSuite.Sdk.IntegrationTests.Fixtures;
 public class ReliableConnectionFixture : TestBedFixture
 {
 	private IClient? _client;
-	private readonly Dictionary<string, object> _data = new();
 
-	public Dictionary<string, object> Data => _data;
+	public Dictionary<string, object> Data { get; } = [];
 
-	public async Task<IClient?> GetClientAsync(ITestOutputHelper testOutputHelper, bool sustainInFixture = true, ConnectionParameters? connectionParameters = null, params IEvent[] events )
+	public ReliableConnectionFixture() : base()
+		=> ConfigurationBuilder.AddUserSecrets<ReliableConnectionFixture>();
+
+	public async Task<IClient?> GetClientAsync(ITestOutputHelper testOutputHelper, bool sustainInFixture = true, ConnectionParameters? connectionParameters = null, params IEvent[] events)
 	{
 		if (_client is null || !sustainInFixture)
 		{
@@ -48,7 +50,7 @@ public class ReliableConnectionFixture : TestBedFixture
 			_client!
 				.RegisterEvent(userConnectedEvent)
 				.RegisterEvent(userDisconnectedEvent);
-			foreach(var @event in events)
+			foreach (var @event in events)
 			{
 				_client!.RegisterEvent(@event);
 			}
@@ -57,6 +59,7 @@ public class ReliableConnectionFixture : TestBedFixture
 	}
 
 	protected override void AddServices(IServiceCollection services, IConfiguration? configuration) => services
+		.Configure<ConnectionSettings>(configuration!.GetSection(nameof(ConnectionSettings)))
 		.Configure<EntraIdTokenAcquisitionSettings>(configuration!.GetSection(nameof(EntraIdTokenAcquisitionSettings)))
 		.AddChatSuiteClient();
 
@@ -66,6 +69,8 @@ public class ReliableConnectionFixture : TestBedFixture
 	{
 		yield return new() { Filename = "appsettings.json", IsOptional = false };
 	}
+
+	protected override void AddUserSecrets(IConfigurationBuilder configurationBuilder) => configurationBuilder.AddUserSecrets<ReliableConnectionFixture>();
 
 	private class UserConnected(ITestOutputHelper testOutputHelper) : IEvent
 	{
