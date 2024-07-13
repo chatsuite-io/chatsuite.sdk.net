@@ -1,8 +1,8 @@
 namespace ChatSuite.Sdk.Plugin.Security;
 
-internal class EntraIDTokenAcquisitionPluginValidator : AbstractValidator<EntraIDTokenAcquisitionPlugin>
+internal class EntraIDDaemonTokenAcquisitionPluginValidator : AbstractValidator<EntraIDDaemonTokenAcquisitionPlugin>
 {
-	public EntraIDTokenAcquisitionPluginValidator()
+	public EntraIDDaemonTokenAcquisitionPluginValidator()
 	{
 		RuleFor(plugin => plugin.Input).NotEmpty();
 		When(plugin => plugin.Input is not null, () =>

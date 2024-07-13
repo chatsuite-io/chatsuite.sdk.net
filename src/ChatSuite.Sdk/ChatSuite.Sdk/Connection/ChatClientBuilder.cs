@@ -1,6 +1,11 @@
-﻿namespace ChatSuite.Sdk.Connection;
+﻿using ChatSuite.Sdk.Plugins.Security;
 
-internal class ChatClientBuilder(IPlugin<MessageBase, string> systemUserIdProvider, IClient client, IValidator<ConnectionParameters> connectionParametesrValidator) : Plugin<ConnectionParameters, IClient?>, IInputValidator
+namespace ChatSuite.Sdk.Connection;
+
+internal class ChatClientBuilder(
+	IPlugin<MessageBase, string> systemUserIdProvider,
+	IAccessTokenProvider accessTokenProvider,
+	IValidator<ConnectionParameters> connectionParametesrValidator) : Plugin<ConnectionParameters, IClient?>, IInputValidator
 {
 	public List<string> RuleSets => [];
 
@@ -8,14 +13,19 @@ internal class ChatClientBuilder(IPlugin<MessageBase, string> systemUserIdProvid
 
 	protected override async Task ExecuteAsync(Response<IClient?> response, CancellationToken cancellationToken)
 	{
+		IClient? client = null;
 		systemUserIdProvider.Input = Input;
 		var systemUserId = await systemUserIdProvider.RunAsync(cancellationToken);
 		if (systemUserId.DenotesSuccess())
 		{
 			try
 			{
-				client.ConnectionParameters = Input!;
-				client.SystemUserId = systemUserId.Result!;
+				client = new Client
+				{
+					ConnectionParameters = Input!,
+					AccessTokenProvider = () => accessTokenProvider.GetAccessTokenAsync(cancellationToken),
+					SystemUserId = systemUserId.Result!
+				};
 				client.Build();
 			}
 			catch (Exception ex)
@@ -33,3 +43,4 @@ internal class ChatClientBuilder(IPlugin<MessageBase, string> systemUserIdProvid
 		response.Result = client;
 	}
 }
+

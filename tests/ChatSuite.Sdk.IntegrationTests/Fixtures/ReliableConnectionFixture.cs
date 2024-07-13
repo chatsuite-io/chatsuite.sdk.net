@@ -60,7 +60,7 @@ public class ReliableConnectionFixture : TestBedFixture
 
 	protected override void AddServices(IServiceCollection services, IConfiguration? configuration) => services
 		.Configure<ConnectionSettings>(configuration!.GetSection(nameof(ConnectionSettings)))
-		.Configure<EntraIdTokenAcquisitionSettings>(configuration!.GetSection(nameof(EntraIdTokenAcquisitionSettings)))
+		.Configure<EntraIDDaemonTokenAcquisitionSettings>(configuration!.GetSection(nameof(EntraIDDaemonTokenAcquisitionSettings)))
 		.AddChatSuiteClient();
 
 	protected override ValueTask DisposeAsyncCore() => _client?.DisposeAsync() ?? new();

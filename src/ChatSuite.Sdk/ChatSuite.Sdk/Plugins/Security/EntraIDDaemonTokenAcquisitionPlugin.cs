@@ -2,11 +2,11 @@ using Microsoft.Identity.Client;
 
 namespace ChatSuite.Sdk.Plugin.Security;
 
-public class EntraIDTokenAcquisitionPlugin : Plugin<EntraIdTokenAcquisitionSettings, string?>, IInputValidator
+internal class EntraIDDaemonTokenAcquisitionPlugin(ILoggerProvider loggerProvider) : Plugin<EntraIDDaemonTokenAcquisitionSettings, string?>(loggerProvider), IInputValidator
 {
 	public List<string> RuleSets => [];
 
-	public ValidationResult Validate() => new EntraIDTokenAcquisitionPluginValidator().Validate(this);
+	public ValidationResult Validate() => new EntraIDDaemonTokenAcquisitionPluginValidator().Validate(this);
 
 	protected override async Task ExecuteAsync(Response<string?> response, CancellationToken cancellationToken)
 	{
@@ -30,6 +30,7 @@ public class EntraIDTokenAcquisitionPlugin : Plugin<EntraIdTokenAcquisitionSetti
 		{
 			response.Status = Status.Fail;
 			response.Errors = [new Response.Error { Message = ex.Message }];
+			_logger?.LogError(ex, ex.Message);
 		}
 	}
 }
