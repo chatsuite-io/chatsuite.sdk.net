@@ -2,11 +2,11 @@ using Microsoft.Identity.Client;
 
 namespace ChatSuite.Sdk.Plugin.Security;
 
-internal class EntraIDDaemonTokenAcquisitionPlugin(ILoggerProvider loggerProvider) : Plugin<EntraIDDaemonTokenAcquisitionSettings, string?>(loggerProvider), IInputValidator
+internal class EntraIdDaemonTokenAcquisitionPlugin(ILoggerProvider loggerProvider) : Plugin<EntraIdDaemonTokenAcquisitionSettings, string?>(loggerProvider), IInputValidator
 {
 	public List<string> RuleSets => [];
 
-	public ValidationResult Validate() => new EntraIDDaemonTokenAcquisitionPluginValidator().Validate(this);
+	public ValidationResult Validate() => new EntraIdDaemonTokenAcquisitionPluginValidator().Validate(this);
 
 	protected override async Task ExecuteAsync(Response<string?> response, CancellationToken cancellationToken)
 	{

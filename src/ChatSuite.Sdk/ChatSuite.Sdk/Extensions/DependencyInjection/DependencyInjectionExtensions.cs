@@ -10,11 +10,11 @@ public static class DependencyInjectionExtensions
 		.AddTransient<IPlugin<ConnectionParameters, IClient?>, ChatClientBuilder>()
 		.AddSingleton<IValidator<ConnectionParameters>, ConnectionParametersValidator>()
 		.AddUserIdProviders()
-		.AddTransient<IPlugin<EntraIDDaemonTokenAcquisitionSettings, string?>, EntraIDDaemonTokenAcquisitionPlugin>()
+		.AddTransient<IPlugin<EntraIdDaemonTokenAcquisitionSettings, string?>, EntraIdDaemonTokenAcquisitionPlugin>()
 		.AddEntraIDDaemonAccessTokenProvider(configuration);
 
 	public static IServiceCollection AddEntraIDDaemonAccessTokenProvider(this IServiceCollection services, IConfiguration configuration)
 		=> services
-		.AddTransient<IAccessTokenProvider, EntraIDDaemonAccessTokenProvider>()
-		.Configure<EntraIDDaemonTokenAcquisitionSettings>(configuration!.GetSection(nameof(EntraIDDaemonTokenAcquisitionSettings)));
+		.AddTransient<IAccessTokenProvider, EntraIdDaemonAccessTokenProvider>()
+		.Configure<EntraIdDaemonTokenAcquisitionSettings>(configuration!.GetSection(nameof(EntraIdDaemonTokenAcquisitionSettings)));
 }

@@ -11,8 +11,8 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	[Fact, TestOrder(1)]
 	public async Task AcquireDaemonJwtTokenAsync()
 	{
-		var settings = _fixture.GetService<IOptions<EntraIDDaemonTokenAcquisitionSettings>>(_testOutputHelper)!;
-		var plugin = _fixture.GetService<IPlugin<EntraIDDaemonTokenAcquisitionSettings, string?>>(_testOutputHelper)!;
+		var settings = _fixture.GetService<IOptions<EntraIdDaemonTokenAcquisitionSettings>>(_testOutputHelper)!;
+		var plugin = _fixture.GetService<IPlugin<EntraIdDaemonTokenAcquisitionSettings, string?>>(_testOutputHelper)!;
 		plugin.Input = settings.Value;
 		var token = await plugin.RunAsync(CancellationToken.None);
 		Assert.NotNull(token?.Result);

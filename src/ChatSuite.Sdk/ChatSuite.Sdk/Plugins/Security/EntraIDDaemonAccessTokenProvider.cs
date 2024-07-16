@@ -3,9 +3,9 @@ using Microsoft.Extensions.Options;
 
 namespace ChatSuite.Sdk.Plugins.Security;
 
-internal class EntraIDDaemonAccessTokenProvider(
-	IOptions<EntraIDDaemonTokenAcquisitionSettings> entraIDDaemonTokenAcquisitionSettings,
-	IPlugin<EntraIDDaemonTokenAcquisitionSettings, string?> entraIDDaemonTokenAcquisitionPlugin) : IAccessTokenProvider
+internal class EntraIdDaemonAccessTokenProvider(
+	IOptions<EntraIdDaemonTokenAcquisitionSettings> entraIDDaemonTokenAcquisitionSettings,
+	IPlugin<EntraIdDaemonTokenAcquisitionSettings, string?> entraIDDaemonTokenAcquisitionPlugin) : IAccessTokenProvider
 {
 	public async Task<string?> GetAccessTokenAsync(CancellationToken cancellationToken)
 	{

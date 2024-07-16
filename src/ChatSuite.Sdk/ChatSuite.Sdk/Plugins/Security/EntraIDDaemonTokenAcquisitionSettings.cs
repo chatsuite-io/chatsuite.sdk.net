@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace ChatSuite.Sdk.Plugin.Security;
 
-public sealed record EntraIDDaemonTokenAcquisitionSettings : EntraIdTokenSettings
+public sealed record EntraIdDaemonTokenAcquisitionSettings : EntraIdTokenSettings
 {
 	public string Instance { get; set; } = string.Empty;
 	public string ClientId { get; set; } = string.Empty;
