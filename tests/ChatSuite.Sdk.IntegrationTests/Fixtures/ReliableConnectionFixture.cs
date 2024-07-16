@@ -2,7 +2,6 @@
 using ChatSuite.Sdk.Extensions;
 using ChatSuite.Sdk.Extensions.DependencyInjection;
 using ChatSuite.Sdk.IntegrationTests.Settings;
-using ChatSuite.Sdk.Plugin.Security;
 using Microsoft.Extensions.Configuration;
 using Xunit.Microsoft.DependencyInjection;
 
@@ -14,14 +13,11 @@ public class ReliableConnectionFixture : TestBedFixture
 
 	public Dictionary<string, object> Data { get; } = [];
 
-	public ReliableConnectionFixture() : base()
-		=> ConfigurationBuilder.AddUserSecrets<ReliableConnectionFixture>();
-
 	public async Task<IClient?> GetClientAsync(ITestOutputHelper testOutputHelper, bool sustainInFixture = true, ConnectionParameters? connectionParameters = null, params IEvent[] events)
 	{
 		if (_client is null || !sustainInFixture)
 		{
-			var chatClient = GetService<IPlugin<ConnectionParameters, IClient?>>(testOutputHelper);
+			var chatClientBuilder = GetService<IPlugin<ConnectionParameters, IClient?>>(testOutputHelper)!;
 			var connectionSettings = GetService<IOptions<ConnectionSettings>>(testOutputHelper)!;
 			var concludedConnectionParameters = connectionParameters ?? new ConnectionParameters
 			{
@@ -36,10 +32,8 @@ public class ReliableConnectionFixture : TestBedFixture
 			};
 			concludedConnectionParameters.Endpoint = connectionSettings.Value.Endpoint;
 			concludedConnectionParameters.SecretKey = connectionSettings.Value.SecretKey;
-			_client = await chatClient!.BuildAsync(concludedConnectionParameters!, error =>
-			{
-				testOutputHelper.WriteLine($"{error}");
-			});
+			chatClientBuilder.Input = concludedConnectionParameters;
+			_client = (await chatClientBuilder.RunAsync(CancellationToken.None)).Result;
 			var userConnectedEvent = new UserConnected(testOutputHelper);
 			var userDisconnectedEvent = new UserDisconnected(testOutputHelper);
 			_client!.Closed += ex =>
@@ -60,8 +54,7 @@ public class ReliableConnectionFixture : TestBedFixture
 
 	protected override void AddServices(IServiceCollection services, IConfiguration? configuration) => services
 		.Configure<ConnectionSettings>(configuration!.GetSection(nameof(ConnectionSettings)))
-		.Configure<EntraIDDaemonTokenAcquisitionSettings>(configuration!.GetSection(nameof(EntraIDDaemonTokenAcquisitionSettings)))
-		.AddChatSuiteClient();
+		.AddChatSuiteClient(configuration);
 
 	protected override ValueTask DisposeAsyncCore() => _client?.DisposeAsync() ?? new();
 
