@@ -26,8 +26,8 @@ public class ReliableConnectionFixture : TestBedFixture
 				Metadata = new()
 				{
 					ClientId = Guid.NewGuid().ToString(),
-					Suite = "test",
-					SpaceId = "testchatsuite"
+					Suite = "testSuite",
+					SpaceId = "testSpaceId"
 				}
 			};
 			concludedConnectionParameters.Endpoint = connectionSettings.Value.Endpoint;
