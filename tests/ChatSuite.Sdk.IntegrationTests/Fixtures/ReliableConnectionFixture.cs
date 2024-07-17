@@ -2,7 +2,6 @@
 using ChatSuite.Sdk.Extensions;
 using ChatSuite.Sdk.Extensions.DependencyInjection;
 using ChatSuite.Sdk.IntegrationTests.Settings;
-using ChatSuite.Sdk.Plugin.Security;
 using Microsoft.Extensions.Configuration;
 using Xunit.Microsoft.DependencyInjection;
 
@@ -11,15 +10,14 @@ namespace ChatSuite.Sdk.IntegrationTests.Fixtures;
 public class ReliableConnectionFixture : TestBedFixture
 {
 	private IClient? _client;
-	private readonly Dictionary<string, object> _data = new();
 
-	public Dictionary<string, object> Data => _data;
+	public Dictionary<string, object> Data { get; } = [];
 
-	public async Task<IClient?> GetClientAsync(ITestOutputHelper testOutputHelper, bool sustainInFixture = true, ConnectionParameters? connectionParameters = null, params IEvent[] events )
+	public async Task<IClient?> GetClientAsync(ITestOutputHelper testOutputHelper, bool sustainInFixture = true, ConnectionParameters? connectionParameters = null, params IEvent[] events)
 	{
 		if (_client is null || !sustainInFixture)
 		{
-			var chatClient = GetService<IPlugin<ConnectionParameters, IClient?>>(testOutputHelper);
+			var chatClientBuilder = GetService<IPlugin<ConnectionParameters, IClient?>>(testOutputHelper)!;
 			var connectionSettings = GetService<IOptions<ConnectionSettings>>(testOutputHelper)!;
 			var concludedConnectionParameters = connectionParameters ?? new ConnectionParameters
 			{
@@ -28,16 +26,14 @@ public class ReliableConnectionFixture : TestBedFixture
 				Metadata = new()
 				{
 					ClientId = Guid.NewGuid().ToString(),
-					Suite = "test",
-					SpaceId = "testchatsuite"
+					Suite = "testSuite",
+					SpaceId = "testSpaceId"
 				}
 			};
 			concludedConnectionParameters.Endpoint = connectionSettings.Value.Endpoint;
 			concludedConnectionParameters.SecretKey = connectionSettings.Value.SecretKey;
-			_client = await chatClient!.BuildAsync(concludedConnectionParameters!, error =>
-			{
-				testOutputHelper.WriteLine($"{error}");
-			});
+			chatClientBuilder.Input = concludedConnectionParameters;
+			_client = (await chatClientBuilder.RunAsync(CancellationToken.None)).Result;
 			var userConnectedEvent = new UserConnected(testOutputHelper);
 			var userDisconnectedEvent = new UserDisconnected(testOutputHelper);
 			_client!.Closed += ex =>
@@ -48,7 +44,7 @@ public class ReliableConnectionFixture : TestBedFixture
 			_client!
 				.RegisterEvent(userConnectedEvent)
 				.RegisterEvent(userDisconnectedEvent);
-			foreach(var @event in events)
+			foreach (var @event in events)
 			{
 				_client!.RegisterEvent(@event);
 			}
@@ -57,8 +53,8 @@ public class ReliableConnectionFixture : TestBedFixture
 	}
 
 	protected override void AddServices(IServiceCollection services, IConfiguration? configuration) => services
-		.Configure<EntraIdTokenAcquisitionSettings>(configuration!.GetSection(nameof(EntraIdTokenAcquisitionSettings)))
-		.AddChatSuiteClient();
+		.Configure<ConnectionSettings>(configuration!.GetSection(nameof(ConnectionSettings)))
+		.AddChatSuiteClient(configuration);
 
 	protected override ValueTask DisposeAsyncCore() => _client?.DisposeAsync() ?? new();
 
@@ -66,6 +62,8 @@ public class ReliableConnectionFixture : TestBedFixture
 	{
 		yield return new() { Filename = "appsettings.json", IsOptional = false };
 	}
+
+	protected override void AddUserSecrets(IConfigurationBuilder configurationBuilder) => configurationBuilder.AddUserSecrets<ReliableConnectionFixture>();
 
 	private class UserConnected(ITestOutputHelper testOutputHelper) : IEvent
 	{

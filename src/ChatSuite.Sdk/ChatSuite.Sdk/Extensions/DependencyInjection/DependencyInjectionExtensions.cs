@@ -1,16 +1,20 @@
 ﻿using ChatSuite.Sdk.Connection;
 using ChatSuite.Sdk.Plugin.Security;
-using ChatSuite.Sdk.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection;
+using ChatSuite.Sdk.Plugins.Security;
 
 namespace ChatSuite.Sdk.Extensions.DependencyInjection;
 
 public static class DependencyInjectionExtensions
 {
-	public static IServiceCollection AddChatSuiteClient(this IServiceCollection services) => services
+	public static IServiceCollection AddChatSuiteClient(this IServiceCollection services, IConfiguration configuration) => services
 		.AddTransient<IPlugin<ConnectionParameters, IClient?>, ChatClientBuilder>()
-		.AddTransient<IClient, Connection.Client>()
 		.AddSingleton<IValidator<ConnectionParameters>, ConnectionParametersValidator>()
 		.AddUserIdProviders()
-		.AddTransient<IPlugin<EntraIdTokenAcquisitionSettings, string?>,EntraIDTokenAcquisitionPlugin>();
+		.AddTransient<IPlugin<EntraIdDaemonTokenAcquisitionSettings, string?>, EntraIdDaemonTokenAcquisitionPlugin>()
+		.AddEntraIDDaemonAccessTokenProvider(configuration);
+
+	public static IServiceCollection AddEntraIDDaemonAccessTokenProvider(this IServiceCollection services, IConfiguration configuration)
+		=> services
+		.AddTransient<IAccessTokenProvider, EntraIdDaemonAccessTokenProvider>()
+		.Configure<EntraIdDaemonTokenAcquisitionSettings>(configuration!.GetSection(nameof(EntraIdDaemonTokenAcquisitionSettings)));
 }

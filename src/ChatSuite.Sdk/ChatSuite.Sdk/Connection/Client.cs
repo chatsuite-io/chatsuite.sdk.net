@@ -12,32 +12,30 @@ internal class Client : IClient
 	private bool _disposed = false;
 	private HubConnection? _hubConnection;
 
+	public ConnectionParameters? ConnectionParameters { private get; set; }
+	public Func<Task< string?>>? AccessTokenProvider { private get; set; }
+	public string? SystemUserId { private get; set; }
+
 	public void Build()
 	{
-		_hubConnection ??= new HubConnectionBuilder()
-			.WithUrl(ConnectionParameters!.Endpoint!, options =>
-			{
-				options.Headers.Add("x-ms-signalr-userid", SystemUserId!);
-				options.Headers.Add("x-functions-key", ConnectionParameters!.SecretKey!);
-			})
-			.WithAutomaticReconnect([TimeSpan.Zero, TimeSpan.Zero, TimeSpan.FromMilliseconds(5)])
-			.Build();
-		_hubConnection.Closed += Closed;
-		_hubConnection.Reconnected += Reconnected;
-		_hubConnection.Reconnecting += Reconnecting;
-	}
-
-	public Task ConnectAsync(CancellationToken cancellationToken)
-	{
-		if(_hubConnection is null)
+		if (_hubConnection is null)
 		{
-			Build();
+			_hubConnection ??= new HubConnectionBuilder()
+				.WithUrl(ConnectionParameters!.Endpoint!, options =>
+				{
+					options.Headers.Add("x-ms-signalr-userid", SystemUserId!);
+					options.Headers.Add("x-functions-key", ConnectionParameters!.SecretKey!);
+					options.AccessTokenProvider = AccessTokenProvider;
+				})
+				.WithAutomaticReconnect([TimeSpan.Zero, TimeSpan.Zero, TimeSpan.FromMilliseconds(5)])
+				.Build();
+			_hubConnection.Closed += Closed;
+			_hubConnection.Reconnected += Reconnected;
+			_hubConnection.Reconnecting += Reconnecting;
 		}
-		return _hubConnection!.StartAsync(cancellationToken);
 	}
 
-	public ConnectionParameters? ConnectionParameters { private get; set; }
-	public string? SystemUserId { private get; set; }
+	public Task ConnectAsync(CancellationToken cancellationToken) => _hubConnection!.StartAsync(cancellationToken);
 
 	public void On(IEvent @event) => _messageHandlers.Add(_hubConnection?.On<object>(@event.Target ?? throw new ArgumentNullException(nameof(@event.Target)), @event.Handle) ?? throw new ApplicationException($"{nameof(Build)} method must be called first."));
 
@@ -53,6 +51,7 @@ internal class Client : IClient
 				await _hubConnection.DisposeAsync();
 			}
 			Dispose();
+			_hubConnection = null;
 			GC.SuppressFinalize(this);
 			_disposed = true;
 		}
