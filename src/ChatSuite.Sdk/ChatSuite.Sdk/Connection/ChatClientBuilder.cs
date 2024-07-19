@@ -13,7 +13,7 @@ internal class ChatClientBuilder(
 
 	protected override async Task ExecuteAsync(Response<IClient?> response, CancellationToken cancellationToken)
 	{
-		IClient? client = null;
+		Client? client = null;
 		systemUserIdProvider.Input = Input;
 		var systemUserId = await systemUserIdProvider.RunAsync(cancellationToken);
 		if (systemUserId.DenotesSuccess())

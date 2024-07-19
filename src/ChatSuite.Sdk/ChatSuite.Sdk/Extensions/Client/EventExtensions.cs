@@ -1,4 +1,4 @@
-﻿namespace ChatSuite.Sdk.Extensions;
+﻿namespace ChatSuite.Sdk.Extensions.Client;
 
 public static class EventExtensions
 {

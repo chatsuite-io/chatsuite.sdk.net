@@ -1,14 +1,14 @@
 using ChatSuite.Sdk.Connection;
 
-namespace ChatSuite.Sdk.Extensions;
+namespace ChatSuite.Sdk.Extensions.Client;
 
 public static class ClientExtensions
 {
-	public static async Task<IClient?> BuildAsync(this IPlugin<ConnectionParameters, IClient?> plugin, ConnectionParameters connectionParameters, Action<Response<IClient?>>? onError)
+	public static async Task<IClient?> BuildAsync(this IPlugin<ConnectionParameters, IClient?> plugin, ConnectionParameters? connectionParameters, Action<Response<IClient?>>? onError)
 	{
 		plugin.Input = connectionParameters;
 		var response = await plugin.RunAsync(CancellationToken.None);
-		if(!response.DenotesSuccess() && onError is not null)
+		if (!response.DenotesSuccess() && onError is not null)
 		{
 			onError(response);
 		}

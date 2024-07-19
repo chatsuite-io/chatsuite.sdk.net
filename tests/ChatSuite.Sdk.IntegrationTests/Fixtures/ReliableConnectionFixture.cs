@@ -1,5 +1,5 @@
 ﻿using ChatSuite.Sdk.Core;
-using ChatSuite.Sdk.Extensions;
+using ChatSuite.Sdk.Extensions.Client;
 using ChatSuite.Sdk.Extensions.DependencyInjection;
 using ChatSuite.Sdk.IntegrationTests.Settings;
 using Microsoft.Extensions.Configuration;
@@ -19,21 +19,13 @@ public class ReliableConnectionFixture : TestBedFixture
 		{
 			var chatClientBuilder = GetService<IPlugin<ConnectionParameters, IClient?>>(testOutputHelper)!;
 			var connectionSettings = GetService<IOptions<ConnectionSettings>>(testOutputHelper)!;
-			var concludedConnectionParameters = connectionParameters ?? new ConnectionParameters
-			{
-				Id = Guid.NewGuid().ToString(),
-				User = "userA",
-				Metadata = new()
-				{
-					ClientId = Guid.NewGuid().ToString(),
-					Suite = "testSuite",
-					SpaceId = "testSpaceId"
-				}
-			};
-			concludedConnectionParameters.Endpoint = connectionSettings.Value.Endpoint;
-			concludedConnectionParameters.SecretKey = connectionSettings.Value.SecretKey;
-			chatClientBuilder.Input = concludedConnectionParameters;
-			_client = (await chatClientBuilder.RunAsync(CancellationToken.None)).Result;
+			var connection = connectionParameters ?? ConnectionParameters.Instantiate(
+				"userA",
+				"testSuite",
+				"testSpaceId");
+			connection.Endpoint = connectionSettings.Value.Endpoint;
+			connection.SecretKey = connectionSettings.Value.SecretKey;
+			_client = await chatClientBuilder.BuildAsync(connection, error => { });
 			var userConnectedEvent = new UserConnected(testOutputHelper);
 			var userDisconnectedEvent = new UserDisconnected(testOutputHelper);
 			_client!.Closed += ex =>
@@ -54,7 +46,8 @@ public class ReliableConnectionFixture : TestBedFixture
 
 	protected override void AddServices(IServiceCollection services, IConfiguration? configuration) => services
 		.Configure<ConnectionSettings>(configuration!.GetSection(nameof(ConnectionSettings)))
-		.AddChatSuiteClient(configuration);
+		.AddChatSuiteClient(configuration)
+		.AddEntraIDDaemonAccessTokenProvider(configuration);
 
 	protected override ValueTask DisposeAsyncCore() => _client?.DisposeAsync() ?? new();
 
