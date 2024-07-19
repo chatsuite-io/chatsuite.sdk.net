@@ -14,7 +14,7 @@ internal class Client : IClient
 
 	public ConnectionParameters? ConnectionParameters { private get; set; }
 	public Func<Task< string?>>? AccessTokenProvider { private get; set; }
-	public string? SystemUserId { private get; set; }
+	internal string? SystemUserId { private get; set; }
 
 	public void Build()
 	{

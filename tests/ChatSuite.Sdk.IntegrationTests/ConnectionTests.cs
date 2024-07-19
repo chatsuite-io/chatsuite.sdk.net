@@ -1,11 +1,13 @@
 using ChatSuite.Sdk.Core;
 using ChatSuite.Sdk.IntegrationTests.Framework;
+using Xunit.Microsoft.DependencyInjection.Attributes;
 
 namespace ChatSuite.Sdk.IntegrationTests;
 
+[TestCaseOrderer("Xunit.Microsoft.DependencyInjection.TestsOrder.TestPriorityOrderer", "Xunit.Microsoft.DependencyInjection")]
 public class ConnectionTests(ITestOutputHelper testOutputHelper, ReliableConnectionFixture fixture) : TestBed<ReliableConnectionFixture>(testOutputHelper, fixture)
 {
-	[Fact]
+	[Fact, TestOrder(1)]
     public async Task ConnectionEstablishesAsync()
     {
 		await using var client = await _fixture.GetClientAsync(_testOutputHelper);
@@ -13,7 +15,7 @@ public class ConnectionTests(ITestOutputHelper testOutputHelper, ReliableConnect
 		Assert.True(client!.IsConnected());
     }
 
-	[Fact]
+	[Fact, TestOrder(10)]
 	public async Task TestConnectionEventsAsync()
 	{
 		var connection1params = new ConnectionParameters

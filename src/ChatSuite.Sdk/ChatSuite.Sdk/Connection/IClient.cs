@@ -8,7 +8,7 @@ public interface IClient : IAsyncDisposable, IDisposable
 
 	ConnectionParameters? ConnectionParameters { set; }
 	Func<Task<string?>>? AccessTokenProvider { set; }
-	string? SystemUserId { set; }
+
 	void Build();
 	bool IsConnected();
 	bool IsDisconnected();
