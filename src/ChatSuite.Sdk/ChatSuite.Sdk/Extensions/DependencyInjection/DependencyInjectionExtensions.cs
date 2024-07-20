@@ -6,7 +6,7 @@ namespace ChatSuite.Sdk.Extensions.DependencyInjection;
 
 public static class DependencyInjectionExtensions
 {
-	public static IServiceCollection AddChatSuiteClient(this IServiceCollection services, IConfiguration configuration) => services
+	public static IServiceCollection AddChatSuiteClient(this IServiceCollection services) => services
 		.AddTransient<IPlugin<ConnectionParameters, IClient?>, ChatClientBuilder>()
 		.AddSingleton<IValidator<ConnectionParameters>, ConnectionParametersValidator>()
 		.AddUserIdProviders()
