@@ -1,14 +1,9 @@
 ﻿namespace ChatSuite.Sdk.Core.Logging;
 
-public class DefaultLoggerProvider : ILoggerProvider
+public class DefaultLoggerProvider(ILoggerFactory loggerFactory) : ILoggerProvider
 {
-    private readonly ILoggerFactory _loggerFactory;
-
-    public DefaultLoggerProvider(ILoggerFactory loggerFactory)
-        => _loggerFactory = loggerFactory;
-
-    public ILogger CreateLogger(string categoryName)
-        => _loggerFactory.CreateLogger(categoryName);
+	public ILogger CreateLogger(string categoryName)
+        => loggerFactory.CreateLogger(categoryName);
 
     public void Dispose()
     {
