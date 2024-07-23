@@ -1,6 +1,6 @@
 ﻿using ChatSuite.Sdk.Connection;
-using ChatSuite.Sdk.Plugin.Security;
 using ChatSuite.Sdk.Plugins.Security;
+using ChatSuite.Sdk.Plugins.Security.EntraId;
 
 namespace ChatSuite.Sdk.Extensions.DependencyInjection;
 

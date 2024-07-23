@@ -1,5 +1,5 @@
 ﻿using ChatSuite.Sdk.Core;
-using ChatSuite.Sdk.Plugin.Security;
+using ChatSuite.Sdk.Plugins.Security.EntraId;
 using Xunit.Microsoft.DependencyInjection.Attributes;
 
 namespace ChatSuite.Sdk.IntegrationTests;

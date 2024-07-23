@@ -1,6 +1,6 @@
 using Microsoft.Identity.Client;
 
-namespace ChatSuite.Sdk.Plugin.Security;
+namespace ChatSuite.Sdk.Plugins.Security.EntraId;
 
 internal class EntraIdDaemonTokenAcquisitionPlugin(ILoggerProvider loggerProvider) : Plugin<EntraIdDaemonTokenAcquisitionSettings, string?>(loggerProvider), IInputValidator
 {
@@ -24,7 +24,7 @@ internal class EntraIdDaemonTokenAcquisitionPlugin(ILoggerProvider loggerProvide
 		catch (MsalServiceException mex) when (mex.Message.Contains("AADSTS70011"))
 		{
 			response.Status = Status.Error;
-			response.Errors = [new Response.Error{Message = mex.Message}];
+			response.Errors = [new Response.Error { Message = mex.Message }];
 		}
 		catch (Exception ex)
 		{
