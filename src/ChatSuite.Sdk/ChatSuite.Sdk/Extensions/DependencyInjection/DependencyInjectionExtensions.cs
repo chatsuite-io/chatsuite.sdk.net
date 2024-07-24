@@ -12,7 +12,7 @@ public static class DependencyInjectionExtensions
 		.AddUserIdProviders()
 		.AddTransient<IPlugin<EntraIdDaemonTokenAcquisitionSettings, string?>, EntraIdDaemonTokenAcquisitionPlugin>();
 
-	public static IServiceCollection AddEntraIDDaemonAccessTokenProvider(this IServiceCollection services, IConfiguration configuration)
+	public static IServiceCollection AddEntraIdDaemonAccessTokenProvider(this IServiceCollection services, IConfiguration configuration)
 		=> services
 		.AddTransient<IAccessTokenProvider, EntraIdDaemonAccessTokenProvider>()
 		.Configure<EntraIdDaemonTokenAcquisitionSettings>(configuration!.GetSection(nameof(EntraIdDaemonTokenAcquisitionSettings)));
