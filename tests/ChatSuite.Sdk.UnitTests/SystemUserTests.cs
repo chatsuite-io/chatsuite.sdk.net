@@ -2,7 +2,7 @@ using ChatSuite.Sdk.Extensions;
 
 namespace ChatSuite.UnitTests;
 
-public class PluginTests(ITestOutputHelper testOutputHelper, TestFixture fixture) : TestBed<TestFixture>(testOutputHelper, fixture)
+public class SystemUserTests(ITestOutputHelper testOutputHelper, TestFixture fixture) : TestBed<TestFixture>(testOutputHelper, fixture)
 {
 	private readonly IPlugin<MessageBase, string> _systemUserIdProvider = fixture.GetService<IPlugin<MessageBase, string>>(testOutputHelper)!;
 	private readonly IPlugin<string, (string? spaceId, string? suite, string? reciever)> _systemUserIdDecomposer = fixture.GetService<IPlugin<string, (string? spaceId, string? suite, string? reciever)>>(testOutputHelper)!;
