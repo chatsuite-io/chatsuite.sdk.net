@@ -1,4 +1,4 @@
-namespace ChatSuite.Sdk.Plugins.Security.EntraId;
+namespace ChatSuite.Sdk.Security.EntraId;
 
 internal class EntraIdDaemonTokenAcquisitionPluginValidator : AbstractValidator<EntraIdDaemonTokenAcquisitionPlugin>
 {

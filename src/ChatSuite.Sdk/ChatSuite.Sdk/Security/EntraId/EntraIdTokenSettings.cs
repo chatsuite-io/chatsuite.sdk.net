@@ -1,4 +1,4 @@
-namespace ChatSuite.Sdk.Core.Security;
+namespace ChatSuite.Sdk.Security.EntraId;
 
 public abstract record EntraIdTokenSettings
 {

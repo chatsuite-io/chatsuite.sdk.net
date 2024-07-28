@@ -1,7 +1,7 @@
 ﻿using ChatSuite.Sdk.Core;
 using ChatSuite.Sdk.Extensions;
-using ChatSuite.Sdk.Plugins.Security.Encryption;
-using ChatSuite.Sdk.Plugins.Security.EntraId;
+using ChatSuite.Sdk.Security.Encryption;
+using ChatSuite.Sdk.Security.EntraId;
 using Xunit.Microsoft.DependencyInjection.Attributes;
 
 namespace ChatSuite.Sdk.IntegrationTests;

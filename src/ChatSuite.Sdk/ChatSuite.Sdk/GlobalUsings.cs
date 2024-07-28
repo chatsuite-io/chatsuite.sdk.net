@@ -2,6 +2,7 @@
 global using ChatSuite.Sdk.Core.Logging;
 global using ChatSuite.Sdk.Core.Message;
 global using ChatSuite.Sdk.Extensions;
+global using ChatSuite.Sdk.Security;
 global using FluentValidation;
 global using FluentValidation.Results;
 global using Microsoft.Extensions.Configuration;

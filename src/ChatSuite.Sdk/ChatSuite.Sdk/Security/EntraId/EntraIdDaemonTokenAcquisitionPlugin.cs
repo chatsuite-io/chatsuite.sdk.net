@@ -1,6 +1,6 @@
 using Microsoft.Identity.Client;
 
-namespace ChatSuite.Sdk.Plugins.Security.EntraId;
+namespace ChatSuite.Sdk.Security.EntraId;
 
 internal class EntraIdDaemonTokenAcquisitionPlugin(ILoggerProvider loggerProvider) : Plugin<EntraIdDaemonTokenAcquisitionSettings, string?>(loggerProvider), IInputValidator
 {

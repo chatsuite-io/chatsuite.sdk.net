@@ -60,22 +60,51 @@ internal class Client : IClient
 
 	public bool IsDisconnected() => _hubConnection?.State == HubConnectionState.Disconnected || _hubConnection is null;
 
-	public async Task<bool> SendMessageToUserAsync(string recipient, object message, CancellationToken cancellationToken)
+	public async Task<bool> SendMessageToUserAsync(string recipient, ChatMessage message, CancellationToken cancellationToken)
 	{
 		if (IsConnected())
 		{
-			await _hubConnection!.SendAsync(ServerMethods.SendMessageToUserInGroup.ToString(), recipient,message, cancellationToken);
+			await _hubConnection!.SendAsync(ServerMethods.SendMessageToUserInGroup.ToString(), recipient, Newtonsoft.Json.JsonConvert.SerializeObject(message), cancellationToken);
 			return true;
 		}
 		return false;
 	}
 
-	public async Task<bool> SendMessageToGroupAsync(object message, CancellationToken cancellationToken)
+	public async Task<bool> SendMessageToUserAsync(string recipient, ChatMessage message, IPlugin<(string encryptionPublicKey, string stringToEncrypt), string> encryptionPlugin, CancellationToken cancellationToken, Action<IEnumerable<Response.Error>?>? onError = null)
 	{
 		if (IsConnected())
 		{
-			await _hubConnection!.SendAsync(ServerMethods.SendMessageToGroup.ToString(), message, cancellationToken);
+			var encryptedMessage = await message.EncryptAsync("publicKey", encryptionPlugin, cancellationToken);
+			if (encryptedMessage is not null)
+			{
+				await _hubConnection!.SendAsync(ServerMethods.SendMessageToUserInGroup.ToString(), recipient, encryptedMessage, cancellationToken, onError);
+				return true;
+			}
+		}
+		return false;
+	}
+
+
+	public async Task<bool> SendMessageToGroupAsync(ChatMessage message, CancellationToken cancellationToken)
+	{
+		if (IsConnected())
+		{
+			await _hubConnection!.SendAsync(ServerMethods.SendMessageToGroup.ToString(), Newtonsoft.Json.JsonConvert.SerializeObject(message), cancellationToken);
 			return true;
+		}
+		return false;
+	}
+
+	public async Task<bool> SendMessageToGroupAsync(ChatMessage message, IPlugin<(string encryptionPublicKey, string stringToEncrypt), string> encryptionPlugin, CancellationToken cancellationToken, Action<IEnumerable<Response.Error>?>? onError = null)
+	{
+		if (IsConnected())
+		{
+			var encryptedMessage = await message.EncryptAsync("publicKey", encryptionPlugin, cancellationToken);
+			if (encryptedMessage is not null)
+			{
+				await _hubConnection!.SendAsync(ServerMethods.SendMessageToUserInGroup.ToString(), encryptedMessage, cancellationToken, onError);
+				return true;
+			}
 		}
 		return false;
 	}

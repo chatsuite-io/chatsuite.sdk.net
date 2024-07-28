@@ -1,7 +1,6 @@
-using ChatSuite.Sdk.Core.Security;
 using System.Globalization;
 
-namespace ChatSuite.Sdk.Plugins.Security.EntraId;
+namespace ChatSuite.Sdk.Security.EntraId;
 
 public sealed record EntraIdDaemonTokenAcquisitionSettings : EntraIdTokenSettings
 {

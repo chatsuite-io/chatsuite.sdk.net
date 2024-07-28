@@ -1,5 +1,4 @@
-﻿
-namespace ChatSuite.Sdk.Plugins.Security.Encryption;
+﻿namespace ChatSuite.Sdk.Security.Encryption;
 
 internal class EncryptStringPluginValidator : AbstractValidator<EncryptStringPlugin>
 {

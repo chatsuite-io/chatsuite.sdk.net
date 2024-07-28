@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 
-namespace ChatSuite.Sdk.Plugins.Security.EntraId;
+namespace ChatSuite.Sdk.Security.EntraId;
 
 internal class EntraIdDaemonAccessTokenProvider(
 	IOptions<EntraIdDaemonTokenAcquisitionSettings> entraIDDaemonTokenAcquisitionSettings,

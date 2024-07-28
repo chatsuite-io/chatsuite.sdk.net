@@ -1,6 +1,4 @@
-﻿using ChatSuite.Sdk.Plugins.Security;
-
-namespace ChatSuite.Sdk.Connection;
+﻿namespace ChatSuite.Sdk.Connection;
 
 internal class ChatClientBuilder(
 	IPlugin<MessageBase, string> systemUserIdProvider,

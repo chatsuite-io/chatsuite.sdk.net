@@ -37,7 +37,7 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper,sustainInFixture: false, user2connection, @event);
 		await client1!.ConnectAsync(CancellationToken.None);
 		await client2!.ConnectAsync(CancellationToken.None);
-		var sent = await client1.SendMessageToUserAsync("userB", Newtonsoft.Json.JsonConvert.SerializeObject(new ChatMessage { Id = Guid.NewGuid().ToString(), Body = ["This is a test"] }), CancellationToken.None);
+		var sent = await client1.SendMessageToUserAsync("userB", new ChatMessage { Id = Guid.NewGuid().ToString(), Body = ["This is a test"] }, CancellationToken.None);
 		Assert.True(sent);
 		var recieved = await @event.WaitAsync(() => @event.Recieved && sent, CancellationToken.None);
 		Assert.True(recieved);
@@ -91,7 +91,7 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		await client2!.ConnectAsync(CancellationToken.None);
 		await client3!.ConnectAsync(CancellationToken.None);
 		await Task.Delay(1000);
-		var sent = await client1.SendMessageToGroupAsync(Newtonsoft.Json.JsonConvert.SerializeObject(new ChatMessage { Body = ["This is a group test"] }), CancellationToken.None);
+		var sent = await client1.SendMessageToGroupAsync(new ChatMessage { Body = ["This is a group test"] }, CancellationToken.None);
 		Assert.True(sent);
 		var recieved1 = await user2event.WaitAsync(() => user2event.Recieved && sent, CancellationToken.None);
 		var recieved2 = await user3event.WaitAsync(() => user3event.Recieved && sent, CancellationToken.None);
@@ -132,7 +132,7 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		await client2!.ConnectAsync(CancellationToken.None);
 		await client2!.StopAsync(CancellationToken.None);
 		await Task.Delay(5000);
-		var sent = await client1.SendMessageToGroupAsync(Newtonsoft.Json.JsonConvert.SerializeObject(new ChatMessage { Body = ["This is a group test for offline users"] }), CancellationToken.None);
+		var sent = await client1.SendMessageToGroupAsync(new ChatMessage { Body = ["This is a group test for offline users"] }, CancellationToken.None);
 		Assert.True(sent);
 	}
 

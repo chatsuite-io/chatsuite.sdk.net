@@ -1,4 +1,4 @@
-﻿namespace ChatSuite.Sdk.Plugins.Security.Encryption;
+﻿namespace ChatSuite.Sdk.Security.Encryption;
 
 internal class DecryptStringPlugin : Plugin<(string encryptionPrivateKey, string encryptedString), string>, IInputValidator
 {
