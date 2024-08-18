@@ -39,7 +39,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	public async Task EncryptAsync()
 	{
 		var cipherKeys = (CipherKeys)_fixture.Data[PubPrivateDictionaryKey];
-		var encryptionPlugin = _fixture.GetKeyedService<IPlugin<(string encryptionPublicKey, string stringToEncrypt), string>>(Extensions.DependencyInjection.DependencyInjectionExtensions.EncryptionPluginKey, testOutputHelper)!;
+		var encryptionPlugin = _fixture.GetKeyedService<IPlugin<(string encryptionPublicKey, string stringToEncrypt), string>>(Extensions.DependencyInjection.DependencyInjectionExtensions.EncryptionPluginKey, _testOutputHelper)!;
 		encryptionPlugin.Input = (cipherKeys.PublicKey, TextToEncrypt);
 		var encryptionResult = await encryptionPlugin.RunAsync(CancellationToken.None);
 		Assert.True(encryptionResult.DenotesSuccess());
@@ -51,7 +51,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	public async Task DecryptAsync()
 	{
 		var cipherKeys = (CipherKeys)_fixture.Data[PubPrivateDictionaryKey];
-		var decryptionPlugin = _fixture.GetKeyedService<IPlugin<(string encryptionPrivateKey, string encryptedString), string>>(Extensions.DependencyInjection.DependencyInjectionExtensions.DecryptionPluginKey, testOutputHelper)!;
+		var decryptionPlugin = _fixture.GetKeyedService<IPlugin<(string encryptionPrivateKey, string encryptedString), string>>(Extensions.DependencyInjection.DependencyInjectionExtensions.DecryptionPluginKey, _testOutputHelper)!;
 		decryptionPlugin.Input = (cipherKeys.PrivateKey, (string)_fixture.Data[nameof(TextToEncrypt)]);
 		var decryptionResult = await decryptionPlugin.RunAsync(CancellationToken.None);
 		Assert.True(decryptionResult.DenotesSuccess());

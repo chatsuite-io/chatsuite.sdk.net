@@ -37,7 +37,7 @@ internal class Client : IClient
 
 	public Task ConnectAsync(CancellationToken cancellationToken) => _hubConnection!.StartAsync(cancellationToken);
 
-	public void On(IEvent @event) => _messageHandlers.Add(_hubConnection?.On<object>(@event.Target ?? throw new ArgumentNullException(nameof(@event.Target)), @event.Handle) ?? throw new ApplicationException($"{nameof(Build)} method must be called first."));
+	public void On(IEvent @event) => _messageHandlers.Add(_hubConnection?.On<object>(@event.Target ?? throw new ArgumentNullException(@event.Target, nameof(@event.Target)), @event.Handle) ?? throw new ApplicationException($"{nameof(Build)} method must be called first."));
 
 	public void Dispose() => DisengageHndlers();
 
