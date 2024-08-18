@@ -1,9 +1,13 @@
-﻿namespace ChatSuite.Sdk.Connection;
+﻿using ChatSuite.Sdk.Connection.Events;
+using ChatSuite.Sdk.Extensions.Client;
+
+namespace ChatSuite.Sdk.Connection;
 
 internal class ChatClientBuilder(
 	IPlugin<MessageBase, string> systemUserIdProvider,
 	IAccessTokenProvider accessTokenProvider,
-	IValidator<ConnectionParameters> connectionParametesrValidator) : Plugin<ConnectionParameters, IClient?>, IInputValidator
+	IValidator<ConnectionParameters> connectionParametesrValidator,
+	[FromKeyedServices(nameof(KeyAcquisitionEvent))] IEvent keyAcquisitionKey) : Plugin<ConnectionParameters, IClient?>, IInputValidator
 {
 	public List<string> RuleSets => [];
 
@@ -25,6 +29,7 @@ internal class ChatClientBuilder(
 					SystemUserId = systemUserId.Result!
 				};
 				client.Build();
+				client.RegisterEvent(keyAcquisitionKey);
 			}
 			catch (Exception ex)
 			{
