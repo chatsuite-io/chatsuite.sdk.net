@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 
 namespace ChatSuite.Sdk.Connection.Events;
 
-internal class EncryptionKeyTracker : IEncryptionKeyTracker
+internal class EncryptionKeyRegistry : IEncryptionKeyRegistry
 {
 	private readonly ConcurrentDictionary<string, CipherKeys> _encryptionKeys = new();
 
@@ -16,11 +16,17 @@ internal class EncryptionKeyTracker : IEncryptionKeyTracker
 		}
 		set
 		{
-			if (_encryptionKeys.TryGetValue(key, out _))
+			ArgumentNullException.ThrowIfNull(value, nameof(value));
+			if (_encryptionKeys.TryGetValue(key, out var oldCipherKeys))
 			{
-				_encryptionKeys.Remove(key, out var _);
+				_encryptionKeys.TryUpdate(key, value, oldCipherKeys!);
 			}
-			_encryptionKeys.TryAdd(key, value ?? throw new ArgumentNullException());
+			else
+			{
+				_encryptionKeys.TryAdd(key, value);
+			}
 		}
 	}
+
+	public int Count => _encryptionKeys.Count;
 }

@@ -74,6 +74,7 @@ internal class Client : IClient
 	{
 		if (IsConnected())
 		{
+			await RequestPublicKeyAsync();
 			var encryptedMessage = await message.EncryptAsync("publicKey", encryptionPlugin, cancellationToken);
 			if (encryptedMessage is not null)
 			{
@@ -82,6 +83,10 @@ internal class Client : IClient
 			}
 		}
 		return false;
+		Task RequestPublicKeyAsync()
+		{
+			return _hubConnection!.SendAsync(ServerMethods.AcquireEncryptionPublicKey.ToString(), recipient, SystemUserId, cancellationToken, onError);
+		}
 	}
 
 

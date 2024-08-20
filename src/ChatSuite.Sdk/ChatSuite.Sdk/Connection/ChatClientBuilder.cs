@@ -7,7 +7,7 @@ internal class ChatClientBuilder(
 	IPlugin<MessageBase, string> systemUserIdProvider,
 	IAccessTokenProvider accessTokenProvider,
 	IValidator<ConnectionParameters> connectionParametesrValidator,
-	[FromKeyedServices(nameof(KeyAcquisitionEvent))] IEvent keyAcquisitionKey) : Plugin<ConnectionParameters, IClient?>, IInputValidator
+	[FromKeyedServices(nameof(KeyAcquisitionEvent))] IEvent publicKeyAcquisitionEvent) : Plugin<ConnectionParameters, IClient?>, IInputValidator
 {
 	public List<string> RuleSets => [];
 
@@ -29,7 +29,7 @@ internal class ChatClientBuilder(
 					SystemUserId = systemUserId.Result!
 				};
 				client.Build();
-				client.RegisterEvent(keyAcquisitionKey);
+				client.RegisterEvent(publicKeyAcquisitionEvent);
 			}
 			catch (Exception ex)
 			{

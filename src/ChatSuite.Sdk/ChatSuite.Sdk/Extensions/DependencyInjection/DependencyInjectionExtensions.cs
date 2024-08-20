@@ -29,6 +29,6 @@ public static class DependencyInjectionExtensions
 		.AddTransient<IPlugin<int, CipherKeys>, EncryptionKeyGeneratorPlugin>()
 		.AddKeyedTransient<IPlugin<(string encryptionPrivateKey, string encryptedString), string>, DecryptStringPlugin>(DecryptionPluginKey);
 
-	public static IServiceCollection AddPrivateEncryptionKeyTracker(this IServiceCollection services) => services
-		.AddSingleton<IEncryptionKeyTracker, EncryptionKeyTracker>();
+	public static IServiceCollection AddEncryptionKeyRegistry(this IServiceCollection services) => services
+		.AddSingleton<IEncryptionKeyRegistry, EncryptionKeyRegistry>();
 }

@@ -2,7 +2,8 @@
 
 namespace ChatSuite.Sdk.Connection.Events;
 
-internal interface IEncryptionKeyTracker
+public interface IEncryptionKeyRegistry
 {
 	CipherKeys? this[string key] { get; set; }
+	int Count { get; }
 }

@@ -49,7 +49,8 @@ public class ReliableConnectionFixture : TestBedFixture
 		.AddChatSuiteClient()
 		.AddEntraIdDaemonAccessTokenProvider(configuration)
 		.AddEncryptionPlugins()
-		.AddDecryptionPlugins();
+		.AddDecryptionPlugins()
+		.AddEncryptionKeyRegistry();
 
 	protected override ValueTask DisposeAsyncCore() => _client?.DisposeAsync() ?? new();
 
