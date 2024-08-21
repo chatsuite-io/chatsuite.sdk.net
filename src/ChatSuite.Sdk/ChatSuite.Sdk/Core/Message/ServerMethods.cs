@@ -13,5 +13,6 @@ public enum ServerMethods
 	ReportUserStatusToUserInGroup,
 	ReportUserStatusToGroup,
 	GetOfflineUsers,
-	AcquireEncryptionPublicKey
+	AcquireEncryptionPublicKey,
+	ShareEncryptionPublicKey
 }

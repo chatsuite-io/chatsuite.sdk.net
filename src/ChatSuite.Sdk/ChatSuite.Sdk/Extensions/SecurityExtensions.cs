@@ -2,7 +2,7 @@
 
 internal static class SecurityExtensions
 {
-	public static async Task<string?> EncryptAsync(this ChatMessage chatMessage, string publicEncryptionKey, IPlugin<(string encryptionPublicKey, string stringToEncrypt), string> encryptionPlugin, CancellationToken cancellationToken, Action<IEnumerable<Response.Error>?>? onError =null)
+	public static async Task<string?> EncryptAndSerializeAsync(this ChatMessage chatMessage, string publicEncryptionKey, IPlugin<(string encryptionPublicKey, string stringToEncrypt), string> encryptionPlugin, CancellationToken cancellationToken, Action<IEnumerable<Response.Error>?>? onError =null)
 	{
 		encryptionPlugin.Input = (publicEncryptionKey, Newtonsoft.Json.JsonConvert.SerializeObject(chatMessage.Body ?? []));
 		var result = await encryptionPlugin.RunAsync(cancellationToken);

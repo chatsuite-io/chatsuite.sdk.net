@@ -66,7 +66,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	public void TestEncryptionKeyAddToRegistry()
 	{
 		var cipherKeys = (CipherKeys)_fixture.Data[PubPrivateDictionaryKey];
-		var registry = _fixture.GetService<IEncryptionKeyRegistry>(testOutputHelper)!;
+		var registry = _fixture.GetService<IEncryptionKeyRegistry>(_testOutputHelper)!;
 		registry[RegistryKey1] = cipherKeys;
 		Assert.Equal(cipherKeys, registry[RegistryKey1]);
 	}
@@ -75,7 +75,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	public void TestEncryptionKeyUpdateRegistry()
 	{
 		var cipherKeys = ((CipherKeys)_fixture.Data[PubPrivateDictionaryKey]) with { PublicKey = "pubkey1" };
-		var registry = _fixture.GetService<IEncryptionKeyRegistry>(testOutputHelper)!;
+		var registry = _fixture.GetService<IEncryptionKeyRegistry>(_testOutputHelper)!;
 		registry[RegistryKey1] = cipherKeys;
 		Assert.Equal(cipherKeys, registry[RegistryKey1]);
 		Assert.Equal(1, registry.Count);
@@ -85,7 +85,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	public void TestEncryptionKeyAddToRegistryAgain()
 	{
 		var cipherKeys = (CipherKeys)_fixture.Data[PubPrivateDictionaryKey] with { PublicKey = "pubkey2" };
-		var registry = _fixture.GetService<IEncryptionKeyRegistry>(testOutputHelper)!;
+		var registry = _fixture.GetService<IEncryptionKeyRegistry>(_testOutputHelper)!;
 		registry[RegistryKey2] = cipherKeys;
 		Assert.Equal(2, registry.Count);
 		Assert.NotEqual(registry[RegistryKey2], registry[RegistryKey1]);

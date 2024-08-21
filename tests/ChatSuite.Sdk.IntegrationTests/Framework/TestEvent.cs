@@ -6,6 +6,8 @@ internal abstract class TestEvent(ITestOutputHelper testOutputHelper) : IEvent
 {
 	public abstract string? Target {  get; }
 
+	public event Action<object>? OnResultReady;
+
 	public virtual Task Handle(object argument)
 	{
 		testOutputHelper.WriteLine("@argument", argument);

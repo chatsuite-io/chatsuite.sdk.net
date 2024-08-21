@@ -15,7 +15,8 @@ public static class DependencyInjectionExtensions
 		.AddSingleton<IValidator<ConnectionParameters>, ConnectionParametersValidator>()
 		.AddUserIdProviders()
 		.AddTransient<IPlugin<EntraIdDaemonTokenAcquisitionSettings, string?>, EntraIdDaemonTokenAcquisitionPlugin>()
-		.AddKeyedTransient<IEvent, KeyAcquisitionEvent>(nameof(KeyAcquisitionEvent));
+		.AddKeyedTransient<IEvent, KeyAcquisitionEvent>(nameof(KeyAcquisitionEvent))
+		.AddKeyedTransient<IEvent, PublicKeyReceivedEvent>(nameof(PublicKeyReceivedEvent));
 
 	public static IServiceCollection AddEntraIdDaemonAccessTokenProvider(this IServiceCollection services, IConfiguration configuration) => services
 		.AddTransient<IAccessTokenProvider, EntraIdDaemonAccessTokenProvider>()

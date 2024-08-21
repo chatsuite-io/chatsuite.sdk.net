@@ -8,5 +8,6 @@ public enum TargetEvent
 	MessageDeliveredToUser,
 	MessageDeliveredToGroup,
 	UserStatusReported,
-	AcquireEncryptionPublicKey
+	AcquireEncryptionPublicKey,
+	PublicKeyReceived
 }

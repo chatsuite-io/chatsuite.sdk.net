@@ -1,3 +1,4 @@
+using ChatSuite.Sdk.Connection.Events;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace ChatSuite.Sdk.Connection;
@@ -8,12 +9,12 @@ internal class Client : IClient
 	public event Func<string?, Task>? Reconnected;
 	public event Func<Exception?, Task>? Reconnecting;
 
-	private readonly List<IDisposable> _messageHandlers = [];
+	private readonly Dictionary<string, MessageHandler> _messageHandlers = [];
 	private bool _disposed = false;
 	private HubConnection? _hubConnection;
 
 	public ConnectionParameters? ConnectionParameters { private get; set; }
-	public Func<Task< string?>>? AccessTokenProvider { private get; set; }
+	public Func<Task<string?>>? AccessTokenProvider { private get; set; }
 	internal string? SystemUserId { private get; set; }
 
 	public void Build()
@@ -37,9 +38,20 @@ internal class Client : IClient
 
 	public Task ConnectAsync(CancellationToken cancellationToken) => _hubConnection!.StartAsync(cancellationToken);
 
-	public void On(IEvent @event) => _messageHandlers.Add(_hubConnection?.On<object>(@event.Target ?? throw new ArgumentNullException(@event.Target, nameof(@event.Target)), @event.Handle) ?? throw new ApplicationException($"{nameof(Build)} method must be called first."));
+	public void On(IEvent @event)
+	{
+		if(@event.Target == TargetEvent.AcquireEncryptionPublicKey.ToString())
+		{
+			@event.OnResultReady += async obj =>
+			{
+				var reportedPublicKey = (KeyAcquisitionEvent.SharedPublicKey)(await obj);
+				await _hubConnection!.SendAsync(ServerMethods.ShareEncryptionPublicKey.ToString(), reportedPublicKey.RequesterSystemUserId, reportedPublicKey.PublicKey, CancellationToken.None);
+			};
+		}
+		_messageHandlers.Add(@event.Target!, new(@event, _hubConnection?.On<object>(@event.Target ?? throw new ArgumentNullException(@event.Target, nameof(@event.Target)), @event.Handle) ?? throw new ApplicationException($"{nameof(Build)} method must be called first.")));
+	}
 
-	public void Dispose() => DisengageHndlers();
+	public void Dispose() => DisengageHandlers();
 
 	public async ValueTask DisposeAsync()
 	{
@@ -74,18 +86,36 @@ internal class Client : IClient
 	{
 		if (IsConnected())
 		{
-			await RequestPublicKeyAsync();
-			var encryptedMessage = await message.EncryptAsync("publicKey", encryptionPlugin, cancellationToken);
+			var publicKey = await RequestPublicKeyAsync();
+			var encryptedMessage = await message.EncryptAndSerializeAsync(publicKey, encryptionPlugin, cancellationToken);
 			if (encryptedMessage is not null)
 			{
-				await _hubConnection!.SendAsync(ServerMethods.SendMessageToUserInGroup.ToString(), recipient, encryptedMessage, cancellationToken, onError);
+				await _hubConnection!.SendAsync(ServerMethods.SendMessageToUserInGroup.ToString(), arg1: recipient, arg2: encryptedMessage, cancellationToken: cancellationToken);
 				return true;
 			}
 		}
 		return false;
-		Task RequestPublicKeyAsync()
+		async Task<string?> RequestPublicKeyAsync()
 		{
-			return _hubConnection!.SendAsync(ServerMethods.AcquireEncryptionPublicKey.ToString(), recipient, SystemUserId, cancellationToken, onError);
+			var taskCompletionSource = new TaskCompletionSource<string?>();
+			try
+			{
+				var handler = _messageHandlers[TargetEvent.PublicKeyReceived.ToString()]!;
+				handler.Event.OnResultReady += async obj =>
+				{
+					var receivedKey = (KeyAcquisitionEvent.SharedPublicKey)(await obj);
+					if(receivedKey?.RequesterSystemUserId == recipient)
+					{
+						taskCompletionSource.SetResult(receivedKey?.PublicKey);
+					}
+				};
+				await _hubConnection!.SendAsync(ServerMethods.AcquireEncryptionPublicKey.ToString(), recipient, SystemUserId, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+				taskCompletionSource.SetException(ex);
+			}
+			return null;
 		}
 	}
 
@@ -104,7 +134,7 @@ internal class Client : IClient
 	{
 		if (IsConnected())
 		{
-			var encryptedMessage = await message.EncryptAsync("publicKey", encryptionPlugin, cancellationToken);
+			var encryptedMessage = await message.EncryptAndSerializeAsync("publicKey", encryptionPlugin, cancellationToken);
 			if (encryptedMessage is not null)
 			{
 				await _hubConnection!.SendAsync(ServerMethods.SendMessageToUserInGroup.ToString(), encryptedMessage, cancellationToken, onError);
@@ -116,7 +146,7 @@ internal class Client : IClient
 
 	public async Task<bool> AddUserToGroupAsync(string username, CancellationToken cancellationToken)
 	{
-		if(IsConnected())
+		if (IsConnected())
 		{
 			await _hubConnection!.SendAsync(ServerMethods.JoinUserToGroup.ToString(), username, cancellationToken);
 			return true;
@@ -138,7 +168,7 @@ internal class Client : IClient
 	{
 		if (IsConnected())
 		{
-			await _hubConnection!.SendAsync(ServerMethods.ReportUserStatusToUserInGroup.ToString(), username,statusDetails, cancellationToken);
+			await _hubConnection!.SendAsync(ServerMethods.ReportUserStatusToUserInGroup.ToString(), username, statusDetails, cancellationToken);
 			return true;
 		}
 		return false;
@@ -162,7 +192,7 @@ internal class Client : IClient
 		}
 	}
 
-	private void DisengageHndlers()
+	private void DisengageHandlers()
 	{
 		if (_hubConnection is not null)
 		{
@@ -170,7 +200,12 @@ internal class Client : IClient
 			_hubConnection.Reconnecting -= Reconnecting;
 			_hubConnection.Reconnected -= Reconnected;
 		}
-		_messageHandlers.ForEach(handler => handler.Dispose());
+		foreach (var handler in _messageHandlers)
+		{
+			handler.Value.Handler.Dispose();
+		}
 		_messageHandlers.Clear();
 	}
+
+	private record MessageHandler(IEvent Event, IDisposable Handler);
 }

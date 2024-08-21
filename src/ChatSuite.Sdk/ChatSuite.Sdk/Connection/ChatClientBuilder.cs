@@ -6,12 +6,13 @@ namespace ChatSuite.Sdk.Connection;
 internal class ChatClientBuilder(
 	IPlugin<MessageBase, string> systemUserIdProvider,
 	IAccessTokenProvider accessTokenProvider,
-	IValidator<ConnectionParameters> connectionParametesrValidator,
-	[FromKeyedServices(nameof(KeyAcquisitionEvent))] IEvent publicKeyAcquisitionEvent) : Plugin<ConnectionParameters, IClient?>, IInputValidator
+	IValidator<ConnectionParameters> connectionParametersValidator,
+	[FromKeyedServices(nameof(KeyAcquisitionEvent))] IEvent publicKeyAcquisitionEvent,
+	[FromKeyedServices(nameof(PublicKeyReceivedEvent))] IEvent publicKeyRecievedEvent) : Plugin<ConnectionParameters, IClient?>, IInputValidator
 {
 	public List<string> RuleSets => [];
 
-	public ValidationResult Validate() => connectionParametesrValidator.Validate(Input!);
+	public ValidationResult Validate() => connectionParametersValidator.Validate(Input!);
 
 	protected override async Task ExecuteAsync(Response<IClient?> response, CancellationToken cancellationToken)
 	{
@@ -30,6 +31,7 @@ internal class ChatClientBuilder(
 				};
 				client.Build();
 				client.RegisterEvent(publicKeyAcquisitionEvent);
+				client.RegisterEvent(publicKeyRecievedEvent);
 			}
 			catch (Exception ex)
 			{
