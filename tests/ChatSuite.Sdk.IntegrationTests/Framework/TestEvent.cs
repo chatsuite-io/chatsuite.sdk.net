@@ -6,11 +6,12 @@ internal abstract class TestEvent(ITestOutputHelper testOutputHelper) : IEvent
 {
 	public abstract string? Target {  get; }
 
-	public event Action<object>? OnResultReady;
+	public event Action<Task<object>>? OnResultReady;
 
 	public virtual Task Handle(object argument)
 	{
 		testOutputHelper.WriteLine("@argument", argument);
+		OnResultReady?.Invoke(Task.FromResult(argument));
 		return Task.CompletedTask;
 	}
 

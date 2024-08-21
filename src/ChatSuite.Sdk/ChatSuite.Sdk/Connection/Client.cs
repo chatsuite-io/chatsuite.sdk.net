@@ -40,15 +40,20 @@ internal class Client : IClient
 
 	public void On(IEvent @event)
 	{
-		if(@event.Target == TargetEvent.AcquireEncryptionPublicKey.ToString())
-		{
-			@event.OnResultReady += async obj =>
-			{
-				var reportedPublicKey = (KeyAcquisitionEvent.SharedPublicKey)(await obj);
-				await _hubConnection!.SendAsync(ServerMethods.ShareEncryptionPublicKey.ToString(), reportedPublicKey.RequesterSystemUserId, reportedPublicKey.PublicKey, CancellationToken.None);
-			};
-		}
+		SendEncryptionPublicKeyAsync();
 		_messageHandlers.Add(@event.Target!, new(@event, _hubConnection?.On<object>(@event.Target ?? throw new ArgumentNullException(@event.Target, nameof(@event.Target)), @event.Handle) ?? throw new ApplicationException($"{nameof(Build)} method must be called first.")));
+
+		void SendEncryptionPublicKeyAsync()
+		{
+			if (@event.Target == TargetEvent.AcquireEncryptionPublicKey.ToString())
+			{
+				@event.OnResultReady += async result =>
+				{
+					var reportedPublicKey = (KeyAcquisitionEvent.SharedPublicKey)(await result);
+					await _hubConnection!.SendAsync(ServerMethods.ShareEncryptionPublicKey.ToString(), reportedPublicKey.RequesterSystemUserId, reportedPublicKey.PublicKey, CancellationToken.None);
+				};
+			}
+		}
 	}
 
 	public void Dispose() => DisengageHandlers();
@@ -87,7 +92,7 @@ internal class Client : IClient
 		if (IsConnected())
 		{
 			var publicKey = await RequestPublicKeyAsync();
-			var encryptedMessage = await message.EncryptAndSerializeAsync(publicKey, encryptionPlugin, cancellationToken);
+			var encryptedMessage = await message.EncryptAndSerializeAsync(publicKey!, encryptionPlugin, cancellationToken);
 			if (encryptedMessage is not null)
 			{
 				await _hubConnection!.SendAsync(ServerMethods.SendMessageToUserInGroup.ToString(), arg1: recipient, arg2: encryptedMessage, cancellationToken: cancellationToken);
@@ -101,9 +106,9 @@ internal class Client : IClient
 			try
 			{
 				var handler = _messageHandlers[TargetEvent.PublicKeyReceived.ToString()]!;
-				handler.Event.OnResultReady += async obj =>
+				handler.Event.OnResultReady += async result =>
 				{
-					var receivedKey = (KeyAcquisitionEvent.SharedPublicKey)(await obj);
+					var receivedKey = (KeyAcquisitionEvent.SharedPublicKey)(await result);
 					if(receivedKey?.RequesterSystemUserId == recipient)
 					{
 						taskCompletionSource.SetResult(receivedKey?.PublicKey);
@@ -115,7 +120,7 @@ internal class Client : IClient
 			{
 				taskCompletionSource.SetException(ex);
 			}
-			return null;
+			return await taskCompletionSource.Task;
 		}
 	}
 

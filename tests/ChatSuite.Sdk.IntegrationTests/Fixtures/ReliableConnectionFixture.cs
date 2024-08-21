@@ -66,14 +66,14 @@ public class ReliableConnectionFixture : TestBedFixture
 		public string? Target => TargetEvent.OnUserConnected.ToString();
 		public bool Connected { get; private set; }
 
-		public event Action<object>? OnResultReady;
+		public event Action<Task<object>>? OnResultReady;
 
 		public Task Handle(object argument)
 		{
 			ArgumentNullException.ThrowIfNullOrEmpty(Target, nameof(Target));
 			testOutputHelper.WriteLine("@argument", argument);
 			Connected = true;
-			OnResultReady?.Invoke(Connected);
+			OnResultReady?.Invoke(Task.FromResult<object>(Connected));
 			return Task.CompletedTask;
 		}
 	}
@@ -83,14 +83,14 @@ public class ReliableConnectionFixture : TestBedFixture
 		public string? Target => TargetEvent.OnUserDisconnected.ToString();
 		public bool Disconnected { get; private set; }
 
-		public event Action<object>? OnResultReady;
+		public event Action<Task<object>>? OnResultReady;
 
 		public Task Handle(object argument)
 		{
 			ArgumentNullException.ThrowIfNullOrEmpty(Target, nameof(Target));
 			testOutputHelper.WriteLine("@argument", argument);
 			Disconnected = true;
-			OnResultReady?.Invoke(Disconnected);
+			OnResultReady?.Invoke(Task.FromResult<object>(Disconnected));
 			return Task.CompletedTask;
 		}
 	}

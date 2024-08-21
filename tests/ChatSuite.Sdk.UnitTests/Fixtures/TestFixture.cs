@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Microsoft.DependencyInjection;
 
-namespace ChatSuite.UnitTests.Fixtures;
+namespace ChatSuite.Sdk.UnitTests.Fixtures;
 
 public class TestFixture : TestBedFixture
 {
