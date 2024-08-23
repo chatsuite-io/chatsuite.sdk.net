@@ -13,8 +13,9 @@ internal class Client : IClient
 	private bool _disposed = false;
 	private HubConnection? _hubConnection;
 
-	public ConnectionParameters? ConnectionParameters { private get; set; }
+	public ConnectionParameters? ConnectionParameters { private get; init; }
 	public Func<Task<string?>>? AccessTokenProvider { private get; set; }
+	public IPlugin<(string encryptionPublicKey, string stringToEncrypt), string>? EncryptionPlugin { private get; init; }
 	internal string? SystemUserId { private get; set; }
 
 	public void Build()
@@ -49,7 +50,7 @@ internal class Client : IClient
 			{
 				@event.OnResultReady += async result =>
 				{
-					var reportedPublicKey = (KeyAcquisitionEvent.SharedPublicKey)(await result);
+					var reportedPublicKey = (PublicKeyAcquisitionEvent.SharedPublicKey)(await result);
 					await _hubConnection!.SendAsync(ServerMethods.ShareEncryptionPublicKey.ToString(), reportedPublicKey.RequesterSystemUserId, reportedPublicKey.PublicKey, CancellationToken.None);
 				};
 			}
@@ -77,51 +78,30 @@ internal class Client : IClient
 
 	public bool IsDisconnected() => _hubConnection?.State == HubConnectionState.Disconnected || _hubConnection is null;
 
-	public async Task<bool> SendMessageToUserAsync(string recipient, ChatMessage message, CancellationToken cancellationToken)
+	public async Task<bool> SendMessageToUserAsync(string otherChatParty, ChatMessage message, CancellationToken cancellationToken)
 	{
 		if (IsConnected())
 		{
-			await _hubConnection!.SendAsync(ServerMethods.SendMessageToUserInGroup.ToString(), recipient, Newtonsoft.Json.JsonConvert.SerializeObject(message), cancellationToken);
+			await _hubConnection!.SendAsync(ServerMethods.SendMessageToUserInGroup.ToString(), otherChatParty, Newtonsoft.Json.JsonConvert.SerializeObject(message), cancellationToken);
 			return true;
 		}
 		return false;
 	}
 
-	public async Task<bool> SendMessageToUserAsync(string recipient, ChatMessage message, IPlugin<(string encryptionPublicKey, string stringToEncrypt), string> encryptionPlugin, CancellationToken cancellationToken, Action<IEnumerable<Response.Error>?>? onError = null)
+	public async Task<bool> SendEncryptedMessageToUserAsync(string otherChatParty, ChatMessage message, CancellationToken cancellationToken)
 	{
+		ArgumentNullException.ThrowIfNull(EncryptionPlugin, nameof(EncryptionPlugin));
 		if (IsConnected())
 		{
-			var publicKey = await RequestPublicKeyAsync();
-			var encryptedMessage = await message.EncryptAndSerializeAsync(publicKey!, encryptionPlugin, cancellationToken);
+			var publicKey = await RequestPublicKeyFromAsync(otherChatParty, cancellationToken);
+			var encryptedMessage = await message.EncryptAndSerializeAsync(publicKey!, EncryptionPlugin, cancellationToken);
 			if (encryptedMessage is not null)
 			{
-				await _hubConnection!.SendAsync(ServerMethods.SendMessageToUserInGroup.ToString(), arg1: recipient, arg2: encryptedMessage, cancellationToken: cancellationToken);
+				await _hubConnection!.SendAsync(ServerMethods.SendEncryptedMessageToUserInGroup.ToString(), otherChatParty, encryptedMessage, cancellationToken: cancellationToken);
 				return true;
 			}
 		}
 		return false;
-		async Task<string?> RequestPublicKeyAsync()
-		{
-			var taskCompletionSource = new TaskCompletionSource<string?>();
-			try
-			{
-				var handler = _messageHandlers[TargetEvent.PublicKeyReceived.ToString()]!;
-				handler.Event.OnResultReady += async result =>
-				{
-					var receivedKey = (KeyAcquisitionEvent.SharedPublicKey)(await result);
-					if(receivedKey?.RequesterSystemUserId == recipient)
-					{
-						taskCompletionSource.SetResult(receivedKey?.PublicKey);
-					}
-				};
-				await _hubConnection!.SendAsync(ServerMethods.AcquireEncryptionPublicKey.ToString(), recipient, SystemUserId, cancellationToken);
-			}
-			catch (Exception ex)
-			{
-				taskCompletionSource.SetException(ex);
-			}
-			return await taskCompletionSource.Task;
-		}
 	}
 
 
@@ -195,6 +175,33 @@ internal class Client : IClient
 		{
 			await _hubConnection.StopAsync(cancellationToken);
 		}
+	}
+
+	public async Task<string?> RequestPublicKeyFromAsync(string otherChatParty, CancellationToken cancellationToken)
+	{
+		var taskCompletionSource = new TaskCompletionSource<string?>();
+		try
+		{
+			if (IsConnected())
+			{
+				var handler = _messageHandlers[TargetEvent.PublicKeyReceived.ToString()]!;
+				handler.Event.OnResultReady += async result =>
+				{
+					var jsonElement = (System.Text.Json.JsonElement)await result;
+					taskCompletionSource.SetResult(jsonElement.GetString()!);
+				};
+				await _hubConnection!.SendAsync(ServerMethods.AcquireEncryptionPublicKey.ToString(), otherChatParty, cancellationToken);
+			}
+			else
+			{
+				taskCompletionSource.SetResult(null);
+			}
+		}
+		catch (Exception ex)
+		{
+			taskCompletionSource.SetException(ex);
+		}
+		return await taskCompletionSource.Task;
 	}
 
 	private void DisengageHandlers()

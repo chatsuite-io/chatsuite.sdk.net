@@ -7,6 +7,7 @@ public enum ServerMethods
 	OnDisconnected,
 	SendMessageToGroup,
 	SendMessageToUserInGroup,
+	SendEncryptedMessageToUserInGroup,
 	JoinUserToGroup,
 	LeaveUserFromGroup,
 	SendStatusToGroup,
