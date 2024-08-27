@@ -121,7 +121,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, user2connection);
 		await client1!.ConnectAsync(CancellationToken.None);
 		await client2!.ConnectAsync(CancellationToken.None);
-		var client2PublicKey = await client1!.RequestPublicKeyFromAsync(user2connection.User, CancellationToken.None);
+		var client2PublicKey = await client1!.RequestPublicKeyAsync(user2connection.User, CancellationToken.None);
 		Assert.NotNull(client2PublicKey);
 		Assert.NotEmpty(client2PublicKey);
 	}

@@ -24,5 +24,5 @@ public interface IClient : IAsyncDisposable, IDisposable
 	Task<bool> RemoveUserFromGroupAsync(string username, CancellationToken cancellationToken);
 	Task<bool> ReportStatusToUserAsync(string username, StatusDetails statusDetails, CancellationToken cancellationToken);
 	Task<bool> ReportStatusToGroupAsync(StatusDetails statusDetails, CancellationToken cancellationToken);
-	Task<string?> RequestPublicKeyFromAsync(string recipient, CancellationToken cancellationToken);
+	Task<string?> RequestPublicKeyAsync(string recipient, CancellationToken cancellationToken, int requestLifetimeInMilliseconds = 10000);
 }

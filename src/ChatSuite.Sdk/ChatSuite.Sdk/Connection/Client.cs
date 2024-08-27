@@ -1,5 +1,6 @@
 using ChatSuite.Sdk.Connection.Events;
 using Microsoft.AspNetCore.SignalR.Client;
+using System.Threading.Tasks;
 
 namespace ChatSuite.Sdk.Connection;
 
@@ -93,7 +94,7 @@ internal class Client : IClient
 		ArgumentNullException.ThrowIfNull(EncryptionPlugin, nameof(EncryptionPlugin));
 		if (IsConnected())
 		{
-			var publicKey = await RequestPublicKeyFromAsync(otherChatParty, cancellationToken);
+			var publicKey = await RequestPublicKeyAsync(otherChatParty, cancellationToken);
 			var encryptedMessage = await message.EncryptAndSerializeAsync(publicKey!, EncryptionPlugin, cancellationToken);
 			if (encryptedMessage is not null)
 			{
@@ -177,7 +178,31 @@ internal class Client : IClient
 		}
 	}
 
-	public async Task<string?> RequestPublicKeyFromAsync(string otherChatParty, CancellationToken cancellationToken)
+	public async Task<string?> RequestPublicKeyAsync(string otherChatParty, CancellationToken cancellationToken, int requestLifetimeInMilliseconds = 10000)
+	{
+		var lifeTimeCancellationTokenSource = new CancellationTokenSource();
+		using var linkedCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, lifeTimeCancellationTokenSource.Token);
+		lifeTimeCancellationTokenSource.CancelAfter(requestLifetimeInMilliseconds);
+		string? publicKey = null;
+		try
+		{
+			publicKey = await RequestPublicKeyAsync(otherChatParty, linkedCancellationToken.Token);
+		}
+		catch (OperationCanceledException oex) when (oex.CancellationToken == linkedCancellationToken.Token)
+		{
+			if(cancellationToken.IsCancellationRequested)
+			{
+				throw new OperationCanceledException(oex.Message, oex, cancellationToken);
+			}
+			else if(lifeTimeCancellationTokenSource.IsCancellationRequested)
+			{
+				throw new TimeoutException($"The lifetime of the request to acquire {otherChatParty}'s public key has expired after {requestLifetimeInMilliseconds} milliseconds.");
+			}
+		}
+		return publicKey;
+	}
+
+	private async Task<string?> RequestPublicKeyAsync(string otherChatParty, CancellationToken cancellationToken)
 	{
 		var taskCompletionSource = new TaskCompletionSource<string?>();
 		try
@@ -188,20 +213,23 @@ internal class Client : IClient
 				handler.Event.OnResultReady += async result =>
 				{
 					var jsonElement = (System.Text.Json.JsonElement)await result;
-					taskCompletionSource.SetResult(jsonElement.GetString()!);
+					taskCompletionSource.TrySetResult(jsonElement.GetString()!);
 				};
 				await _hubConnection!.SendAsync(ServerMethods.AcquireEncryptionPublicKey.ToString(), otherChatParty, cancellationToken);
 			}
 			else
 			{
-				taskCompletionSource.SetResult(null);
+				taskCompletionSource.TrySetResult(null);
 			}
 		}
 		catch (Exception ex)
 		{
-			taskCompletionSource.SetException(ex);
+			taskCompletionSource.TrySetException(ex);
 		}
-		return await taskCompletionSource.Task;
+		using (cancellationToken.Register(() => taskCompletionSource.TrySetCanceled()))
+		{
+			return await taskCompletionSource.Task;
+		}
 	}
 
 	private void DisengageHandlers()
