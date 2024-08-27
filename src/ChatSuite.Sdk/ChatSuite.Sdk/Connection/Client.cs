@@ -186,7 +186,7 @@ internal class Client : IClient
 		string? publicKey = null;
 		try
 		{
-			publicKey = await RequestPublicKeyAsync(otherChatParty, linkedCancellationToken.Token);
+			publicKey = await SendPublicKeyRequestAsync(otherChatParty, linkedCancellationToken.Token);
 		}
 		catch (OperationCanceledException oex) when (oex.CancellationToken == linkedCancellationToken.Token)
 		{
@@ -202,7 +202,7 @@ internal class Client : IClient
 		return publicKey;
 	}
 
-	private async Task<string?> RequestPublicKeyAsync(string otherChatParty, CancellationToken cancellationToken)
+	private async Task<string?> SendPublicKeyRequestAsync(string otherChatParty, CancellationToken cancellationToken)
 	{
 		var taskCompletionSource = new TaskCompletionSource<string?>();
 		try
