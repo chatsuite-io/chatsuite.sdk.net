@@ -39,8 +39,8 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		await client2!.ConnectAsync(CancellationToken.None);
 		var sent = await client1.SendMessageToUserAsync("userB", new ChatMessage { Id = Guid.NewGuid().ToString(), Body = ["This is a test"] }, CancellationToken.None);
 		Assert.True(sent);
-		var recieved = await @event.WaitAsync(() => @event.Received && sent, CancellationToken.None);
-		Assert.True(recieved);
+		var received = await @event.WaitAsync(() => @event.Received && sent, CancellationToken.None);
+		Assert.True(received);
 	}
 
 	//Note: this test may exhibit some timing issues and therefore wemay want to run it manually with breakpoints

@@ -42,10 +42,10 @@ internal class Client : IClient
 
 	public void On(IEvent @event)
 	{
-		SendEncryptionPublicKeyAsync();
+		RegisterEventToSendEncryptionPublicKey();
 		_messageHandlers.Add(@event.Target!, new(@event, _hubConnection?.On<object>(@event.Target ?? throw new ArgumentNullException(@event.Target, nameof(@event.Target)), @event.Handle) ?? throw new ApplicationException($"{nameof(Build)} method must be called first.")));
 
-		void SendEncryptionPublicKeyAsync()
+		void RegisterEventToSendEncryptionPublicKey()
 		{
 			if (@event.Target == TargetEvent.AcquireEncryptionPublicKey.ToString())
 			{
@@ -98,7 +98,7 @@ internal class Client : IClient
 			var encryptedMessage = await message.EncryptAndSerializeAsync(publicKey!, EncryptionPlugin, cancellationToken);
 			if (encryptedMessage is not null)
 			{
-				await _hubConnection!.SendAsync(ServerMethods.SendEncryptedMessageToUserInGroup.ToString(), otherChatParty, encryptedMessage, cancellationToken: cancellationToken);
+				await _hubConnection!.SendAsync(ServerMethods.SendMessageToUserInGroup.ToString(), otherChatParty, encryptedMessage, cancellationToken: cancellationToken);
 				return true;
 			}
 		}
