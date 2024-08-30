@@ -10,7 +10,7 @@ internal class DecryptStringPlugin : Plugin<(string encryptionPrivateKey, string
 	{
 		using var rsa = new RSACryptoServiceProvider(EncryptionKeyGeneratorPlugin.DwKeySize);
 		rsa.ImportCspBlob(Convert.FromBase64String(Input.encryptionPrivateKey));
-		var decryptedData = rsa.Decrypt(Convert.FromBase64String(Input.encryptedString), false);
+		var decryptedData = rsa.Decrypt(Convert.FromBase64String(Input.encryptedString), true);
 		response.Result = Encoding.UTF8.GetString(decryptedData);
 		return Task.CompletedTask;
 	}
