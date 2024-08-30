@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using Polly.Registry;
 
 namespace ChatSuite.Sdk.Extensions.DependencyInjection;

@@ -9,6 +9,5 @@ public static class SystemUserIdProviderExtensions
 		.AddSingleton<IPlugin<string, (string? spaceId, string? suite, string? reciever)>, SystemUserIdDecomposerPlugin>()
 		.AddSingleton<IValidator<MessageBase>, SystemUserIdProviderPluginValidator>()
 		.AddSingleton<IValidator<Metadata>, MessageMetadataValidator>()
-		.AddKeyedSingleton<IValidator<string>, SystemUserIdValidator>(nameof(SystemUserIdDecomposerPlugin))
-		.AddSingleton<IPlugin<string, (string? spaceId, string? suite, string? reciever)>, SystemUserIdDecomposerPlugin>();
+		.AddKeyedSingleton<IValidator<string>, SystemUserIdValidator>(nameof(SystemUserIdDecomposerPlugin));
 }

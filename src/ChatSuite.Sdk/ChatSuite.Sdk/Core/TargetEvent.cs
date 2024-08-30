@@ -7,5 +7,7 @@ public enum TargetEvent
 	OnUserDisconnected,
 	MessageDeliveredToUser,
 	MessageDeliveredToGroup,
-	UserStatusReported
+	UserStatusReported,
+	AcquireEncryptionPublicKey,
+	PublicKeyReceived
 }

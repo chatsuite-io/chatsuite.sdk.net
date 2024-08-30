@@ -1,4 +1,4 @@
-﻿namespace ChatSuite.Sdk.Plugins.Security;
+﻿namespace ChatSuite.Sdk.Security;
 
 public interface IAccessTokenProvider
 {

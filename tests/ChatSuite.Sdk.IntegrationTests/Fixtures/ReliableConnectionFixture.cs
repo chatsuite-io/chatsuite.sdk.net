@@ -47,7 +47,10 @@ public class ReliableConnectionFixture : TestBedFixture
 	protected override void AddServices(IServiceCollection services, IConfiguration? configuration) => services
 		.Configure<ConnectionSettings>(configuration!.GetSection(nameof(ConnectionSettings)))
 		.AddChatSuiteClient()
-		.AddEntraIDDaemonAccessTokenProvider(configuration);
+		.AddEntraIdDaemonAccessTokenProvider(configuration)
+		.AddEncryptionPlugins()
+		.AddDecryptionPlugins()
+		.AddEncryptionKeyRegistry();
 
 	protected override ValueTask DisposeAsyncCore() => _client?.DisposeAsync() ?? new();
 
@@ -63,11 +66,15 @@ public class ReliableConnectionFixture : TestBedFixture
 		public string? Target => TargetEvent.OnUserConnected.ToString();
 		public bool Connected { get; private set; }
 
-		public Task Handle(object argument)
+		public event Action<Task<object>>? OnResultReady;
+		public event Action<string>? OnErrored;
+
+		public Task HandleAsync(object argument)
 		{
 			ArgumentNullException.ThrowIfNullOrEmpty(Target, nameof(Target));
 			testOutputHelper.WriteLine("@argument", argument);
 			Connected = true;
+			OnResultReady?.Invoke(Task.FromResult<object>(Connected));
 			return Task.CompletedTask;
 		}
 	}
@@ -77,11 +84,15 @@ public class ReliableConnectionFixture : TestBedFixture
 		public string? Target => TargetEvent.OnUserDisconnected.ToString();
 		public bool Disconnected { get; private set; }
 
-		public Task Handle(object argument)
+		public event Action<Task<object>>? OnResultReady;
+		public event Action<string>? OnErrored;
+
+		public Task HandleAsync(object argument)
 		{
 			ArgumentNullException.ThrowIfNullOrEmpty(Target, nameof(Target));
 			testOutputHelper.WriteLine("@argument", argument);
 			Disconnected = true;
+			OnResultReady?.Invoke(Task.FromResult<object>(Disconnected));
 			return Task.CompletedTask;
 		}
 	}
