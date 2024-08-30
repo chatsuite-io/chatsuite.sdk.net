@@ -1,6 +1,7 @@
 using ChatSuite.Sdk.Extensions;
+using ChatSuite.Sdk.UnitTests.Fixtures;
 
-namespace ChatSuite.UnitTests;
+namespace ChatSuite.Sdk.UnitTests;
 
 public class SystemUserTests(ITestOutputHelper testOutputHelper, TestFixture fixture) : TestBed<TestFixture>(testOutputHelper, fixture)
 {
@@ -8,8 +9,8 @@ public class SystemUserTests(ITestOutputHelper testOutputHelper, TestFixture fix
 	private readonly IPlugin<string, (string? spaceId, string? suite, string? reciever)> _systemUserIdDecomposer = fixture.GetService<IPlugin<string, (string? spaceId, string? suite, string? reciever)>>(testOutputHelper)!;
 
 	[Fact]
-    public async Task SystemUserIsNotEmptyAsync()
-    {
+	public async Task SystemUserIsNotEmptyAsync()
+	{
 		_systemUserIdProvider.Input = new ChatMessage
 		{
 			User = "myName",
@@ -22,7 +23,7 @@ public class SystemUserTests(ITestOutputHelper testOutputHelper, TestFixture fix
 		var response = await _systemUserIdProvider.RunAsync(CancellationToken.None);
 		Assert.NotNull(response.Result);
 		Assert.NotEmpty(response.Result);
-    }
+	}
 
 	[Fact]
 	public async Task SystemUserIdDecompositionNotEmptyAsync()

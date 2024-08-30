@@ -1,4 +1,5 @@
 ﻿using ChatSuite.Sdk.Connection;
+using ChatSuite.Sdk.Connection.Events;
 using ChatSuite.Sdk.Security.Encryption;
 using ChatSuite.Sdk.Security.EntraId;
 
@@ -13,10 +14,12 @@ public static class DependencyInjectionExtensions
 		.AddTransient<IPlugin<ConnectionParameters, IClient?>, ChatClientBuilder>()
 		.AddSingleton<IValidator<ConnectionParameters>, ConnectionParametersValidator>()
 		.AddUserIdProviders()
-		.AddTransient<IPlugin<EntraIdDaemonTokenAcquisitionSettings, string?>, EntraIdDaemonTokenAcquisitionPlugin>();
+		.AddTransient<IPlugin<EntraIdDaemonTokenAcquisitionSettings, string?>, EntraIdDaemonTokenAcquisitionPlugin>()
+		.AddKeyedTransient<IEvent, PublicKeyAcquisitionEvent>(nameof(PublicKeyAcquisitionEvent))
+		.AddKeyedTransient<IEvent, PublicKeyReceivedEvent>(nameof(PublicKeyReceivedEvent))
+		.AddKeyedTransient<IEvent, UserToUserMessageReceivedEvent>(nameof(UserToUserMessageReceivedEvent));
 
-	public static IServiceCollection AddEntraIdDaemonAccessTokenProvider(this IServiceCollection services, IConfiguration configuration)
-		=> services
+	public static IServiceCollection AddEntraIdDaemonAccessTokenProvider(this IServiceCollection services, IConfiguration configuration) => services
 		.AddTransient<IAccessTokenProvider, EntraIdDaemonAccessTokenProvider>()
 		.Configure<EntraIdDaemonTokenAcquisitionSettings>(configuration!.GetSection(nameof(EntraIdDaemonTokenAcquisitionSettings)));
 
@@ -27,4 +30,7 @@ public static class DependencyInjectionExtensions
 	public static IServiceCollection AddDecryptionPlugins(this IServiceCollection services) => services
 		.AddTransient<IPlugin<int, CipherKeys>, EncryptionKeyGeneratorPlugin>()
 		.AddKeyedTransient<IPlugin<(string encryptionPrivateKey, string encryptedString), string>, DecryptStringPlugin>(DecryptionPluginKey);
+
+	public static IServiceCollection AddEncryptionKeyRegistry(this IServiceCollection services) => services
+		.AddSingleton<IEncryptionKeyRegistry, EncryptionKeyRegistry>();
 }

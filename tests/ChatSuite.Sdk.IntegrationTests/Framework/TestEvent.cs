@@ -6,9 +6,13 @@ internal abstract class TestEvent(ITestOutputHelper testOutputHelper) : IEvent
 {
 	public abstract string? Target {  get; }
 
-	public virtual Task Handle(object argument)
+	public event Action<Task<object>>? OnResultReady;
+	public event Action<string>? OnErrored;
+
+	public virtual Task HandleAsync(object argument)
 	{
 		testOutputHelper.WriteLine("@argument", argument);
+		OnResultReady?.Invoke(Task.FromResult(argument));
 		return Task.CompletedTask;
 	}
 
@@ -23,6 +27,7 @@ internal abstract class TestEvent(ITestOutputHelper testOutputHelper) : IEvent
 				cancellationToken.ThrowIfCancellationRequested();
 				if (stopWatch.ElapsedMilliseconds >= 30000)
 				{
+					OnErrored?.Invoke("The timeout expired.");
 					return false;
 				}
 				await Task.Delay(1, cancellationToken);

@@ -17,7 +17,7 @@ steps:
   displayName: 'Installing .NET SDK 8.0'
   inputs:
     packageType: sdk
-    version: 8.0.303
+    version: 8.0.401
     installationPath: $(Agent.ToolsDirectory)/dotnet
 - task: DotNetCoreCLI@2
   displayName: 'Building'

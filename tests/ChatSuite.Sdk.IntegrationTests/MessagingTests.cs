@@ -21,7 +21,7 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 				Suite = Suite,
 				SpaceId = Space
 			}
-		}, new UserMessageRecieved(_testOutputHelper));
+		}, new UserMessageReceived(_testOutputHelper));
 		var user2connection = new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
@@ -33,14 +33,14 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 				SpaceId = Space
 			}
 		};
-		var @event = new UserMessageRecieved(_testOutputHelper);
+		var @event = new UserMessageReceived(_testOutputHelper);
 		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper,sustainInFixture: false, user2connection, @event);
 		await client1!.ConnectAsync(CancellationToken.None);
 		await client2!.ConnectAsync(CancellationToken.None);
 		var sent = await client1.SendMessageToUserAsync("userB", new ChatMessage { Id = Guid.NewGuid().ToString(), Body = ["This is a test"] }, CancellationToken.None);
 		Assert.True(sent);
-		var recieved = await @event.WaitAsync(() => @event.Recieved && sent, CancellationToken.None);
-		Assert.True(recieved);
+		var received = await @event.WaitAsync(() => @event.Received && sent, CancellationToken.None);
+		Assert.True(received);
 	}
 
 	//Note: this test may exhibit some timing issues and therefore wemay want to run it manually with breakpoints
@@ -72,7 +72,7 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 				SpaceId = Space
 			}
 		};
-		var user2event = new GroupMessageRecieved(_testOutputHelper);
+		var user2event = new GroupMessageReceived(_testOutputHelper);
 		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, user2connection, user2event);
 		var user3connection = new ConnectionParameters
 		{
@@ -85,7 +85,7 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 				SpaceId = Space
 			}
 		};
-		var user3event = new GroupMessageRecieved(_testOutputHelper);
+		var user3event = new GroupMessageReceived(_testOutputHelper);
 		await using var client3 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, user3connection, user3event);
 		await client1!.ConnectAsync(CancellationToken.None);
 		await client2!.ConnectAsync(CancellationToken.None);
@@ -93,8 +93,8 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		await Task.Delay(1000);
 		var sent = await client1.SendMessageToGroupAsync(new ChatMessage { Body = ["This is a group test"] }, CancellationToken.None);
 		Assert.True(sent);
-		var recieved1 = await user2event.WaitAsync(() => user2event.Recieved && sent, CancellationToken.None);
-		var recieved2 = await user3event.WaitAsync(() => user3event.Recieved && sent, CancellationToken.None);
+		var recieved1 = await user2event.WaitAsync(() => user2event.Received && sent, CancellationToken.None);
+		var recieved2 = await user3event.WaitAsync(() => user3event.Received && sent, CancellationToken.None);
 		Assert.True(recieved1 && recieved2);
 	}
 
@@ -164,7 +164,7 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 				SpaceId = Space
 			}
 		};
-		var user2event = new StatusReportRecieved(_testOutputHelper);
+		var user2event = new StatusReportReceived(_testOutputHelper);
 		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, user2connection, user2event);
 		var user3connection = new ConnectionParameters
 		{
@@ -177,7 +177,7 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 				SpaceId = Space
 			}
 		};
-		var user3event = new StatusReportRecieved(_testOutputHelper);
+		var user3event = new StatusReportReceived(_testOutputHelper);
 		await using var client3 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, user3connection, user3event);
 		await client1!.ConnectAsync(CancellationToken.None);
 		await client2!.ConnectAsync(CancellationToken.None);
@@ -185,8 +185,8 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		await Task.Delay(1000);
 		var reported = await client1!.ReportStatusToGroupAsync(new StatusDetails { Description = "Running Tests", Title = "Testing" }, CancellationToken.None);
 		Assert.True(reported);
-		var recieved1 = await user2event.WaitAsync(() => user2event.Recieved && reported, CancellationToken.None);
-		var recieved2 = await user3event.WaitAsync(() => user3event.Recieved && reported, CancellationToken.None);
+		var recieved1 = await user2event.WaitAsync(() => user2event.Received && reported, CancellationToken.None);
+		var recieved2 = await user3event.WaitAsync(() => user3event.Received && reported, CancellationToken.None);
 		Assert.True(recieved1 && recieved2);
 	}
 
@@ -218,34 +218,34 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 				SpaceId = Space
 			}
 		};
-		var user2event = new StatusReportRecieved(_testOutputHelper);
+		var user2event = new StatusReportReceived(_testOutputHelper);
 		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, user2connection, user2event);		
 		await client1!.ConnectAsync(CancellationToken.None);
 		await client2!.ConnectAsync(CancellationToken.None);
 		await Task.Delay(1000);
 		var reported = await client1!.ReportStatusToUserAsync(user2connection.User/*the target username*/, new StatusDetails { Description = "Running Tests", Title = "Testing" }, CancellationToken.None);
 		Assert.True(reported);
-		Assert.True(await user2event.WaitAsync(() => user2event.Recieved && reported, CancellationToken.None));
+		Assert.True(await user2event.WaitAsync(() => user2event.Received && reported, CancellationToken.None));
 	}
 
-	private class UserMessageRecieved(ITestOutputHelper testOutputHelper) : TestEvent(testOutputHelper)
+	private class UserMessageReceived(ITestOutputHelper testOutputHelper) : TestEvent(testOutputHelper)
 	{
 		public override string? Target => TargetEvent.MessageDeliveredToUser.ToString();
-		public bool Recieved { get; private set; } = false;
+		public bool Received { get; private set; } = false;
 
-		public override Task Handle(object argument)
+		public override Task HandleAsync(object argument)
 		{
-			Recieved = true;
-			return base.Handle(argument);
+			Received = true;
+			return base.HandleAsync(argument);
 		}
 	}
 
-	private class GroupMessageRecieved(ITestOutputHelper testOutputHelper) : UserMessageRecieved(testOutputHelper)
+	private class GroupMessageReceived(ITestOutputHelper testOutputHelper) : UserMessageReceived(testOutputHelper)
 	{
 		public override string? Target => TargetEvent.MessageDeliveredToGroup.ToString();
 	}
 
-	private class StatusReportRecieved(ITestOutputHelper testOutputHelper) : UserMessageRecieved(testOutputHelper)
+	private class StatusReportReceived(ITestOutputHelper testOutputHelper) : UserMessageReceived(testOutputHelper)
 	{
 		public override string? Target => TargetEvent.UserStatusReported.ToString();
 	}
