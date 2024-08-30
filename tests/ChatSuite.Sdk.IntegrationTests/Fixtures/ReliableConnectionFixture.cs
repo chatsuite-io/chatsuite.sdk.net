@@ -67,6 +67,7 @@ public class ReliableConnectionFixture : TestBedFixture
 		public bool Connected { get; private set; }
 
 		public event Action<Task<object>>? OnResultReady;
+		public event Action<string>? OnErrored;
 
 		public Task HandleAsync(object argument)
 		{
@@ -84,6 +85,7 @@ public class ReliableConnectionFixture : TestBedFixture
 		public bool Disconnected { get; private set; }
 
 		public event Action<Task<object>>? OnResultReady;
+		public event Action<string>? OnErrored;
 
 		public Task HandleAsync(object argument)
 		{

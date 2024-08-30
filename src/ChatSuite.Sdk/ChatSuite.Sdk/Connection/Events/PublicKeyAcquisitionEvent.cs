@@ -6,6 +6,8 @@ namespace ChatSuite.Sdk.Connection.Events;
 internal class PublicKeyAcquisitionEvent(IEncryptionKeyRegistry encryptionKeyRegistry, IPlugin<int, CipherKeys> encryptionKeyGeneratorPlugin) : IEvent
 {
 	public event Action<Task<object>>? OnResultReady;
+	public event Action<string>? OnErrored;
+
 	public string? Target => TargetEvent.AcquireEncryptionPublicKey.ToString();
 
 	public async Task HandleAsync(object argument)
