@@ -233,10 +233,10 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		public override string? Target => TargetEvent.MessageDeliveredToUser.ToString();
 		public bool Received { get; private set; } = false;
 
-		public override Task Handle(object argument)
+		public override Task HandleAsync(object argument)
 		{
 			Received = true;
-			return base.Handle(argument);
+			return base.HandleAsync(argument);
 		}
 	}
 

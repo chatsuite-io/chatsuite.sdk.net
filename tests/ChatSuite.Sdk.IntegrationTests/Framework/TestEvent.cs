@@ -8,7 +8,7 @@ internal abstract class TestEvent(ITestOutputHelper testOutputHelper) : IEvent
 
 	public event Action<Task<object>>? OnResultReady;
 
-	public virtual Task Handle(object argument)
+	public virtual Task HandleAsync(object argument)
 	{
 		testOutputHelper.WriteLine("@argument", argument);
 		OnResultReady?.Invoke(Task.FromResult(argument));

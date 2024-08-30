@@ -68,7 +68,7 @@ public class ReliableConnectionFixture : TestBedFixture
 
 		public event Action<Task<object>>? OnResultReady;
 
-		public Task Handle(object argument)
+		public Task HandleAsync(object argument)
 		{
 			ArgumentNullException.ThrowIfNullOrEmpty(Target, nameof(Target));
 			testOutputHelper.WriteLine("@argument", argument);
@@ -85,7 +85,7 @@ public class ReliableConnectionFixture : TestBedFixture
 
 		public event Action<Task<object>>? OnResultReady;
 
-		public Task Handle(object argument)
+		public Task HandleAsync(object argument)
 		{
 			ArgumentNullException.ThrowIfNullOrEmpty(Target, nameof(Target));
 			testOutputHelper.WriteLine("@argument", argument);

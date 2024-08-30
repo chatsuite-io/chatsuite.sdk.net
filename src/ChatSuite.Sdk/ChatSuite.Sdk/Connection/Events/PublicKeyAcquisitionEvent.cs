@@ -8,7 +8,7 @@ internal class PublicKeyAcquisitionEvent(IEncryptionKeyRegistry encryptionKeyReg
 	public event Action<Task<object>>? OnResultReady;
 	public string? Target => TargetEvent.AcquireEncryptionPublicKey.ToString();
 
-	public async Task Handle(object argument)
+	public async Task HandleAsync(object argument)
 	{
 		var jsonElement = (JsonElement)argument;
 		var requesterSystemUserId = jsonElement.GetString()!;

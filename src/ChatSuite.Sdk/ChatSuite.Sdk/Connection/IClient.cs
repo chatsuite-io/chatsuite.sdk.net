@@ -16,6 +16,7 @@ public interface IClient : IAsyncDisposable, IDisposable
 	Task StopAsync(CancellationToken cancellationToken);
 	Task ConnectAsync(CancellationToken cancellationToken);
 	void On(IEvent @event);
+	IEvent GetChatMessageReceivedEvent();
 	Task<bool> SendMessageToUserAsync(string recipient, ChatMessage message, CancellationToken cancellationToken);
 	Task<bool> SendEncryptedMessageToUserAsync(string recipient, ChatMessage message, CancellationToken cancellationToken);
 	Task<bool> SendMessageToGroupAsync(ChatMessage message, CancellationToken cancellationToken);
@@ -24,5 +25,7 @@ public interface IClient : IAsyncDisposable, IDisposable
 	Task<bool> RemoveUserFromGroupAsync(string username, CancellationToken cancellationToken);
 	Task<bool> ReportStatusToUserAsync(string username, StatusDetails statusDetails, CancellationToken cancellationToken);
 	Task<bool> ReportStatusToGroupAsync(StatusDetails statusDetails, CancellationToken cancellationToken);
+#if DEBUG
 	Task<string?> RequestPublicKeyAsync(string recipient, CancellationToken cancellationToken, int requestLifetimeInMilliseconds = 10000);
+#endif
 }

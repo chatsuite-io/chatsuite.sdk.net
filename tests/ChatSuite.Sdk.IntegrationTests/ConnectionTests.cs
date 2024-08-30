@@ -65,10 +65,10 @@ public class ConnectionTests(ITestOutputHelper testOutputHelper, ReliableConnect
 		public override string? Target => TargetEvent.OnUserConnected.ToString();
 		public bool Connected { get; private set; }
 
-		public override Task Handle(object argument)
+		public override Task HandleAsync(object argument)
 		{
 			Connected = true;
-			return base.Handle(argument);
+			return base.HandleAsync(argument);
 		}
 	}
 
@@ -77,10 +77,10 @@ public class ConnectionTests(ITestOutputHelper testOutputHelper, ReliableConnect
 		public override string? Target => TargetEvent.OnUserDisconnected.ToString();
 		public bool Disconnected { get; private set; }
 
-		public override Task Handle(object argument)
+		public override Task HandleAsync(object argument)
 		{			
 			Disconnected = true;
-			return base.Handle(argument);
+			return base.HandleAsync(argument);
 		}
 	}
 }

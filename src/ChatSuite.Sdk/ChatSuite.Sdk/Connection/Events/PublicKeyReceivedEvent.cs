@@ -6,7 +6,7 @@ internal class PublicKeyReceivedEvent : IEvent
 
 	public event Action<Task<object>>? OnResultReady;
 
-	public Task Handle(object argument)
+	public Task HandleAsync(object argument)
 	{
 		OnResultReady?.Invoke(Task.FromResult(argument));
 		return Task.CompletedTask;

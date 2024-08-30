@@ -1,6 +1,5 @@
 using ChatSuite.Sdk.Connection.Events;
 using Microsoft.AspNetCore.SignalR.Client;
-using System.Threading.Tasks;
 
 namespace ChatSuite.Sdk.Connection;
 
@@ -43,7 +42,7 @@ internal class Client : IClient
 	public void On(IEvent @event)
 	{
 		RegisterEventToSendEncryptionPublicKey();
-		_messageHandlers.Add(@event.Target!, new(@event, _hubConnection?.On<object>(@event.Target ?? throw new ArgumentNullException(@event.Target, nameof(@event.Target)), @event.Handle) ?? throw new ApplicationException($"{nameof(Build)} method must be called first.")));
+		_messageHandlers.Add(@event.Target!, new(@event, _hubConnection?.On<object>(@event.Target ?? throw new ArgumentNullException(@event.Target, nameof(@event.Target)), @event.HandleAsync) ?? throw new ApplicationException($"{nameof(Build)} method must be called first.")));
 
 		void RegisterEventToSendEncryptionPublicKey()
 		{
@@ -170,15 +169,16 @@ internal class Client : IClient
 		return false;
 	}
 
-	public async Task StopAsync(CancellationToken cancellationToken)
-	{
-		if (_hubConnection is not null)
-		{
-			await _hubConnection.StopAsync(cancellationToken);
-		}
-	}
+	public Task StopAsync(CancellationToken cancellationToken) => _hubConnection?.StopAsync(cancellationToken) ?? Task.CompletedTask;
 
-	public async Task<string?> RequestPublicKeyAsync(string otherChatParty, CancellationToken cancellationToken, int requestLifetimeInMilliseconds = 10000)
+	public IEvent GetChatMessageReceivedEvent() => _messageHandlers[TargetEvent.MessageDeliveredToUser.ToString()].Event;
+
+#if DEBUG
+	public
+#else
+	private
+#endif
+		async Task<string?> RequestPublicKeyAsync(string otherChatParty, CancellationToken cancellationToken, int requestLifetimeInMilliseconds = 10000)
 	{
 		var lifeTimeCancellationTokenSource = new CancellationTokenSource();
 		using var linkedCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, lifeTimeCancellationTokenSource.Token);
