@@ -7,6 +7,10 @@ internal static class SecurityExtensions
 		encryptionPlugin.Input = (publicEncryptionKey, Newtonsoft.Json.JsonConvert.SerializeObject(chatMessage.Body ?? []));
 		var result = await encryptionPlugin.RunAsync(cancellationToken);
 		chatMessage.Body = [result.Result ?? string.Empty];
+		chatMessage.Metadata ??= new()
+		{
+			IsMessageEncrypted = true
+		};
 		var success = result.DenotesSuccess() ? Newtonsoft.Json.JsonConvert.SerializeObject(chatMessage) : null;
 		if(success is null)
 		{
