@@ -1,5 +1,4 @@
-﻿using ChatSuite.Sdk.Connection.Events;
-using ChatSuite.Sdk.Core;
+﻿using ChatSuite.Sdk.Core;
 using ChatSuite.Sdk.Core.Message;
 using ChatSuite.Sdk.Extensions;
 using ChatSuite.Sdk.Security.Encryption;
@@ -67,7 +66,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	public void TestEncryptionKeyAddToRegistry()
 	{
 		var cipherKeys = (CipherKeys)_fixture.Data[PubPrivateDictionaryKey];
-		var registry = _fixture.GetService<IEncryptionKeyRegistry>(_testOutputHelper)!;
+		var registry = _fixture.GetService<IRegistry<CipherKeys>>(_testOutputHelper)!;
 		registry[RegistryKey1] = cipherKeys;
 		Assert.Equal(cipherKeys, registry[RegistryKey1]);
 	}
@@ -76,7 +75,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	public void TestEncryptionKeyUpdateRegistry()
 	{
 		var cipherKeys = ((CipherKeys)_fixture.Data[PubPrivateDictionaryKey]) with { PublicKey = "pubkey1" };
-		var registry = _fixture.GetService<IEncryptionKeyRegistry>(_testOutputHelper)!;
+		var registry = _fixture.GetService<IRegistry<CipherKeys>>(_testOutputHelper)!;
 		registry[RegistryKey1] = cipherKeys;
 		Assert.Equal(cipherKeys, registry[RegistryKey1]);
 		Assert.Equal(1, registry.Count);
@@ -86,7 +85,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	public void TestEncryptionKeyAddToRegistryAgain()
 	{
 		var cipherKeys = (CipherKeys)_fixture.Data[PubPrivateDictionaryKey] with { PublicKey = "pubkey2" };
-		var registry = _fixture.GetService<IEncryptionKeyRegistry>(_testOutputHelper)!;
+		var registry = _fixture.GetService<IRegistry<CipherKeys>>(_testOutputHelper)!;
 		registry[RegistryKey2] = cipherKeys;
 		Assert.Equal(2, registry.Count);
 		Assert.NotEqual(registry[RegistryKey2], registry[RegistryKey1]);
@@ -177,8 +176,8 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	public void SaveCipherKeys()
 	{
 		const string Key = "mykey";
-		var registry = _fixture.GetService<IEncryptionKeyRegistry>(_testOutputHelper)!;
-		registry[Key] = new("myPublicKey", "myPrivateKey3");
+		var registry = _fixture.GetService<IRegistry<CipherKeys>>(_testOutputHelper)!;
+		registry[Key] = new("myPublicKey", "myPrivateKey");
 		Assert.Equal(1, registry.Count);
 		var record = registry[Key];
 		Assert.NotNull(record);

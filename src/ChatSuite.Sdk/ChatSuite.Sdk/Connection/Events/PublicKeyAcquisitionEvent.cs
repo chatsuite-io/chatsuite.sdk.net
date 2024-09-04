@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace ChatSuite.Sdk.Connection.Events;
 
-internal class PublicKeyAcquisitionEvent(IEncryptionKeyRegistry encryptionKeyRegistry, IPlugin<int, CipherKeys> encryptionKeyGeneratorPlugin) : IEvent
+internal class PublicKeyAcquisitionEvent(IRegistry<CipherKeys> encryptionKeyRegistry, IPlugin<int, CipherKeys> encryptionKeyGeneratorPlugin) : IEvent
 {
 	public event Action<Task<object>>? OnResultReady;
 	public event Action<string>? OnErrored;

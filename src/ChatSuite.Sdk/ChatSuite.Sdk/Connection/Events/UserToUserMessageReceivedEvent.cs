@@ -1,9 +1,10 @@
 ﻿using ChatSuite.Sdk.Extensions.DependencyInjection;
+using ChatSuite.Sdk.Security.Encryption;
 
 namespace ChatSuite.Sdk.Connection.Events;
 
 internal class UserToUserMessageReceivedEvent(
-	IEncryptionKeyRegistry encryptionKeyRegistry,
+	IRegistry<CipherKeys> encryptionKeyRegistry,
 	IPlugin<MessageBase, string> systemUserIdProvider,
 	[FromKeyedServices(DependencyInjectionExtensions.DecryptionPluginKey)]IPlugin<(string encryptionPrivateKey, string encryptedString), string> decryptionPlugin) : IEvent
 {

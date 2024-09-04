@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 
 namespace ChatSuite.Sdk.Connection.Events;
 
-internal class EncryptionKeyRegistry : IEncryptionKeyRegistry
+internal class EncryptionKeyRegistry : IRegistry<CipherKeys>
 {
 	private readonly ConcurrentDictionary<string, CipherKeys> _encryptionKeys = new();
 
