@@ -172,4 +172,15 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 		while (!messageReceived && !cancellationTokenSource.IsCancellationRequested){ }
 		Assert.True(messageReceived);
 	}
+
+	[Fact, TestOrder(50)]
+	public void SaveCipherKeys()
+	{
+		const string Key = "mykey";
+		var registry = _fixture.GetService<IEncryptionKeyRegistry>(_testOutputHelper)!;
+		registry[Key] = new("myPublicKey", "myPrivateKey3");
+		Assert.Equal(1, registry.Count);
+		var record = registry[Key];
+		Assert.NotNull(record);
+	}
 }
