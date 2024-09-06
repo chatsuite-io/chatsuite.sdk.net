@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace ChatSuite.Sdk.Connection.Events;
 
-internal class PublicKeyAcquisitionEvent(IRegistry<CipherKeys> encryptionKeyRegistry, IPlugin<int, CipherKeys> encryptionKeyGeneratorPlugin) : IEvent
+internal class PublicKeyAcquisitionEvent(IRegistry<CipherKeysTracker> encryptionKeyRegistry, IPlugin<int, CipherKeys> encryptionKeyGeneratorPlugin) : IEvent
 {
 	public event Action<Task<object>>? OnResultReady;
 	public event Action<string>? OnErrored;
@@ -15,7 +15,7 @@ internal class PublicKeyAcquisitionEvent(IRegistry<CipherKeys> encryptionKeyRegi
 		var jsonElement = (JsonElement)argument;
 		var requesterSystemUserId = jsonElement.GetString()!;
 		var cipherKeys = await encryptionKeyGeneratorPlugin.RunAsync(CancellationToken.None);
-		encryptionKeyRegistry[requesterSystemUserId] = cipherKeys.Result ?? throw new ArgumentNullException();
+		encryptionKeyRegistry[requesterSystemUserId] = CipherKeysTracker.Create(requesterSystemUserId, cipherKeys.Result) ?? throw new ArgumentNullException();
 		OnResultReady?.Invoke(Task.FromResult<object>(new SharedPublicKey(requesterSystemUserId, cipherKeys.Result.PublicKey)));
 	}
 

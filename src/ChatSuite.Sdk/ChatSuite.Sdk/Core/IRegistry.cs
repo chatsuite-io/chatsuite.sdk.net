@@ -1,9 +1,8 @@
-﻿using ChatSuite.Sdk.Security.Encryption;
+﻿namespace ChatSuite.Sdk.Core;
 
-namespace ChatSuite.Sdk.Core;
-
-public interface IRegistry<T>
+public interface IRegistry<T> : IDisposable
 {
 	T? this[string key] { get; set; }
-	int Count { get; }
+	ulong Count { get; }
+	void Recycle();
 }
