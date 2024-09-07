@@ -22,7 +22,7 @@ internal class UserToUserMessageReceivedEvent(
 			{
 				systemUserIdProvider.Input = chatMessage;
 				var systemUserId = (await systemUserIdProvider.RunAsync(CancellationToken.None)).Result;
-				var encryptionPrivateKey = encryptionKeyRegistry[systemUserId!]!.PrivateKey;
+				var encryptionPrivateKey = encryptionKeyRegistry[systemUserId!]!.PrivateKey!;
 				var message = await decryptionPlugin.DecryptAsync((string)chatMessage.Body!.Single(), encryptionPrivateKey, CancellationToken.None);
 				chatMessage.Body = [message!];
 			}

@@ -202,6 +202,35 @@ internal class Client : IClient
 		return publicKey;
 	}
 
+#if DEBUG
+	public
+#else
+	private
+#endif
+		async Task<bool> IsUserOnlineAsync(string otherChatParty, CancellationToken cancellationToken, int requestLifetimeInMilliseconds = 10000)
+	{
+		var lifeTimeCancellationTokenSource = new CancellationTokenSource();
+		using var linkedCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, lifeTimeCancellationTokenSource.Token);
+		lifeTimeCancellationTokenSource.CancelAfter(requestLifetimeInMilliseconds);
+		var isOnline = false;
+		try
+		{
+			isOnline = await SendUserOnlineStatusQueryRequestAsync(otherChatParty, linkedCancellationToken.Token) ?? false;
+		}
+		catch (OperationCanceledException oex) when (oex.CancellationToken == linkedCancellationToken.Token)
+		{
+			if (cancellationToken.IsCancellationRequested)
+			{
+				throw new OperationCanceledException(oex.Message, oex, cancellationToken);
+			}
+			else if (lifeTimeCancellationTokenSource.IsCancellationRequested)
+			{
+				throw new TimeoutException($"The lifetime of the request to acquire {otherChatParty}'s public key has expired after {requestLifetimeInMilliseconds} milliseconds.");
+			}
+		}
+		return isOnline;
+	}
+
 	private async Task<string?> SendPublicKeyRequestAsync(string otherChatParty, CancellationToken cancellationToken)
 	{
 		var taskCompletionSource = new TaskCompletionSource<string?>();
@@ -216,6 +245,35 @@ internal class Client : IClient
 					taskCompletionSource.TrySetResult(jsonElement.GetString()!);
 				};
 				await _hubConnection!.SendAsync(ServerMethods.AcquireEncryptionPublicKey.ToString(), otherChatParty, cancellationToken);
+			}
+			else
+			{
+				taskCompletionSource.TrySetResult(null);
+			}
+		}
+		catch (Exception ex)
+		{
+			taskCompletionSource.TrySetException(ex);
+		}
+		using (cancellationToken.Register(() => taskCompletionSource.TrySetCanceled()))
+		{
+			return await taskCompletionSource.Task;
+		}
+	}
+
+	private async Task<bool?> SendUserOnlineStatusQueryRequestAsync(string otherChatParty, CancellationToken cancellationToken)
+	{
+		var taskCompletionSource = new TaskCompletionSource<bool?>();
+		try
+		{
+			if (IsConnected())
+			{
+				var handler = _messageHandlers[TargetEvent.UserStatusReported.ToString()]!;
+				handler.Event.OnResultReady += async result =>
+				{
+					taskCompletionSource.TrySetResult((bool)await result);
+				};
+				await _hubConnection!.SendAsync(ServerMethods.UserConnectionStatus.ToString(), otherChatParty, cancellationToken);
 			}
 			else
 			{

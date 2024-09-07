@@ -17,7 +17,8 @@ public static class DependencyInjectionExtensions
 		.AddTransient<IPlugin<EntraIdDaemonTokenAcquisitionSettings, string?>, EntraIdDaemonTokenAcquisitionPlugin>()
 		.AddKeyedTransient<IEvent, PublicKeyAcquisitionEvent>(nameof(PublicKeyAcquisitionEvent))
 		.AddKeyedTransient<IEvent, PublicKeyReceivedEvent>(nameof(PublicKeyReceivedEvent))
-		.AddKeyedTransient<IEvent, UserToUserMessageReceivedEvent>(nameof(UserToUserMessageReceivedEvent));
+		.AddKeyedTransient<IEvent, UserToUserMessageReceivedEvent>(nameof(UserToUserMessageReceivedEvent))
+		.AddKeyedTransient<IEvent, UserStatusReportReceived>(nameof(UserStatusReportReceived));
 
 	public static IServiceCollection AddEntraIdDaemonAccessTokenProvider(this IServiceCollection services, IConfiguration configuration) => services
 		.AddTransient<IAccessTokenProvider, EntraIdDaemonAccessTokenProvider>()

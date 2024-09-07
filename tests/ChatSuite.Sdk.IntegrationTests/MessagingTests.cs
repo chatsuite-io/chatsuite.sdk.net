@@ -43,7 +43,7 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		Assert.True(received);
 	}
 
-	//Note: this test may exhibit some timing issues and therefore wemay want to run it manually with breakpoints
+	//Note: this test may exhibit some timing issues and therefore we may want to run it manually with breakpoints
 	[Fact]
 	public async Task SendMessageFromUserToGroupAsync()
 	{

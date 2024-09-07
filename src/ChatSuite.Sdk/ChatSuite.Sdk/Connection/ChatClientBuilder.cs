@@ -10,7 +10,8 @@ internal class ChatClientBuilder(
 	[FromKeyedServices(Extensions.DependencyInjection.DependencyInjectionExtensions.EncryptionPluginKey)] IPlugin<(string encryptionPublicKey, string stringToEncrypt), string> encryptionPlugin,
 	[FromKeyedServices(nameof(PublicKeyAcquisitionEvent))] IEvent publicKeyAcquisitionEvent,
 	[FromKeyedServices(nameof(PublicKeyReceivedEvent))] IEvent publicKeyReceivedEvent,
-	[FromKeyedServices(nameof(UserToUserMessageReceivedEvent))] IEvent userToUserMessageReceivedEvent) : Plugin<ConnectionParameters, IClient?>, IInputValidator
+	[FromKeyedServices(nameof(UserToUserMessageReceivedEvent))] IEvent userToUserMessageReceivedEvent,
+	[FromKeyedServices(nameof(UserStatusReportReceived))] IEvent userStatusReportReceivedEvent) : Plugin<ConnectionParameters, IClient?>, IInputValidator
 {
 	public List<string> RuleSets => [];
 
@@ -33,9 +34,11 @@ internal class ChatClientBuilder(
 					EncryptionPlugin = encryptionPlugin
 				};
 				client.Build();
-				client.RegisterEvent(publicKeyAcquisitionEvent);
-				client.RegisterEvent(publicKeyReceivedEvent);
-				client.RegisterEvent(userToUserMessageReceivedEvent);
+				client
+					.RegisterEvent(publicKeyAcquisitionEvent)
+					.RegisterEvent(publicKeyReceivedEvent)
+					.RegisterEvent(userToUserMessageReceivedEvent)
+					.RegisterEvent(userStatusReportReceivedEvent);
 			}
 			catch (Exception ex)
 			{
