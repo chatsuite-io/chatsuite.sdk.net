@@ -11,7 +11,7 @@ internal class ChatClientBuilder(
 	[FromKeyedServices(nameof(PublicKeyAcquisitionEvent))] IEvent publicKeyAcquisitionEvent,
 	[FromKeyedServices(nameof(PublicKeyReceivedEvent))] IEvent publicKeyReceivedEvent,
 	[FromKeyedServices(nameof(UserToUserMessageReceivedEvent))] IEvent userToUserMessageReceivedEvent,
-	[FromKeyedServices(nameof(UserStatusReportReceived))] IEvent userStatusReportReceivedEvent) : Plugin<ConnectionParameters, IClient?>, IInputValidator
+	[FromKeyedServices(nameof(UserOnlineOfflineStatusReportReceived))] IEvent userStatusReportReceivedEvent) : Plugin<ConnectionParameters, IClient?>, IInputValidator
 {
 	public List<string> RuleSets => [];
 

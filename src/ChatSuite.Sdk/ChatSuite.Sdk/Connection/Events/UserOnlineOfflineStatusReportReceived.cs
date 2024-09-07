@@ -1,6 +1,6 @@
 ﻿namespace ChatSuite.Sdk.Connection.Events;
 
-internal class UserStatusReportReceived : IEvent
+internal class UserOnlineOfflineStatusReportReceived : IEvent
 {
 	public string? Target => TargetEvent.OnlineOfflineStatusReported.ToString();
 

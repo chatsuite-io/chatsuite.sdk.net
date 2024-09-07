@@ -132,6 +132,40 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 		Assert.NotNull(client2PublicKey);
 		Assert.NotEmpty(client2PublicKey);
 	}
+
+	[Fact, TestOrder(30)]
+	public async Task GetOnlineStatusAsync()
+	{
+		const string Space = "space102";
+		const string Suite = "connectiontest102";
+		await using var client1 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, new ConnectionParameters
+		{
+			Id = Guid.NewGuid().ToString(),
+			User = "userA",
+			Metadata = new()
+			{
+				ClientId = Guid.NewGuid().ToString(),
+				Suite = Suite,
+				SpaceId = Space
+			}
+		});
+		var user2connection = new ConnectionParameters
+		{
+			Id = Guid.NewGuid().ToString(),
+			User = "userB",
+			Metadata = new()
+			{
+				ClientId = Guid.NewGuid().ToString(),
+				Suite = Suite,
+				SpaceId = Space
+			}
+		};
+		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, user2connection);
+		await client1!.ConnectAsync(CancellationToken.None);
+		await client2!.ConnectAsync(CancellationToken.None);
+		var isOnline = await client1!.IsUserOnlineAsync(user2connection.User, CancellationToken.None);
+		Assert.True(isOnline);
+	}
 #endif
 
 	[Fact, TestOrder(40)]

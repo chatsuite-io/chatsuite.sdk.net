@@ -18,7 +18,7 @@ public static class DependencyInjectionExtensions
 		.AddKeyedTransient<IEvent, PublicKeyAcquisitionEvent>(nameof(PublicKeyAcquisitionEvent))
 		.AddKeyedTransient<IEvent, PublicKeyReceivedEvent>(nameof(PublicKeyReceivedEvent))
 		.AddKeyedTransient<IEvent, UserToUserMessageReceivedEvent>(nameof(UserToUserMessageReceivedEvent))
-		.AddKeyedTransient<IEvent, UserStatusReportReceived>(nameof(UserStatusReportReceived));
+		.AddKeyedTransient<IEvent, UserOnlineOfflineStatusReportReceived>(nameof(UserOnlineOfflineStatusReportReceived));
 
 	public static IServiceCollection AddEntraIdDaemonAccessTokenProvider(this IServiceCollection services, IConfiguration configuration) => services
 		.AddTransient<IAccessTokenProvider, EntraIdDaemonAccessTokenProvider>()
