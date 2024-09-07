@@ -271,8 +271,7 @@ internal class Client : IClient
 				var handler = _messageHandlers[TargetEvent.OnlineOfflineStatusReported.ToString()]!;
 				handler.Event.OnResultReady += async result =>
 				{
-					var isOnline = (bool)await result;
-					taskCompletionSource.TrySetResult(isOnline);
+					taskCompletionSource.TrySetResult((bool)await result);
 				};
 				await _hubConnection!.SendAsync(ServerMethods.UserConnectionStatus.ToString(), otherChatParty, cancellationToken);
 			}
