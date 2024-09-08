@@ -9,7 +9,8 @@ public interface IClient : IAsyncDisposable, IDisposable
 	ConnectionParameters? ConnectionParameters { init; }
 	Func<Task<string?>>? AccessTokenProvider { set; }
 	IPlugin<(string encryptionPublicKey, string stringToEncrypt), string>? EncryptionPlugin { init; }
-
+	IRegistry<CipherKeysTracker>? CipherKeysRegistry { init; }
+	IPlugin<MessageBase, string>? SystemUserIdProviderPlugin { init; }
 	void Build();
 	bool IsConnected();
 	bool IsDisconnected();
@@ -27,5 +28,6 @@ public interface IClient : IAsyncDisposable, IDisposable
 	Task<bool> ReportStatusToGroupAsync(StatusDetails statusDetails, CancellationToken cancellationToken);
 #if DEBUG
 	Task<string?> RequestPublicKeyAsync(string recipient, CancellationToken cancellationToken, int requestLifetimeInMilliseconds = 10000);
+	Task<bool> IsUserOnlineAsync(string otherChatParty, CancellationToken cancellationToken, int requestLifetimeInMilliseconds = 10000);
 #endif
 }

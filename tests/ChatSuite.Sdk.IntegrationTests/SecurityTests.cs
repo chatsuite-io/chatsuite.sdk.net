@@ -13,8 +13,8 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 {
 	private const string TextToEncrypt = "Muskoka, once discovered, never forgotten!";
 	private const string PubPrivateDictionaryKey = "key";
-	private const string RegistryKey1 = "systemuserid1";
-	private const string RegistryKey2 = "systemuserid2";
+	private const string SystemUserId1 = "systemuserid1";
+	private const string SystemUserId2 = "systemuserid2";
 
 	[Fact, TestOrder(1)]
 	public async Task AcquireDaemonJwtTokenAsync()
@@ -67,29 +67,35 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	public void TestEncryptionKeyAddToRegistry()
 	{
 		var cipherKeys = (CipherKeys)_fixture.Data[PubPrivateDictionaryKey];
-		var registry = _fixture.GetService<IEncryptionKeyRegistry>(_testOutputHelper)!;
-		registry[RegistryKey1] = cipherKeys;
-		Assert.Equal(cipherKeys, registry[RegistryKey1]);
+		var registry = _fixture.GetService<IRegistry<CipherKeysTracker>>(_testOutputHelper)!;
+		registry.Recycle();
+		registry[SystemUserId1] = CipherKeysTracker.Create(SystemUserId1, cipherKeys);
+		Assert.Equal(cipherKeys.PublicKey, registry[SystemUserId1]!.PublicKey);
+		Assert.Equal(cipherKeys.PrivateKey, registry[SystemUserId1]!.PrivateKey);
 	}
 
 	[Fact, TestOrder(25)]
 	public void TestEncryptionKeyUpdateRegistry()
 	{
 		var cipherKeys = ((CipherKeys)_fixture.Data[PubPrivateDictionaryKey]) with { PublicKey = "pubkey1" };
-		var registry = _fixture.GetService<IEncryptionKeyRegistry>(_testOutputHelper)!;
-		registry[RegistryKey1] = cipherKeys;
-		Assert.Equal(cipherKeys, registry[RegistryKey1]);
-		Assert.Equal(1, registry.Count);
+		var registry = _fixture.GetService<IRegistry<CipherKeysTracker>>(_testOutputHelper)!;
+		registry.Recycle();
+		registry[SystemUserId1] = CipherKeysTracker.Create(SystemUserId1, cipherKeys);
+		Assert.Equal(cipherKeys.PublicKey, registry[SystemUserId1]!.PublicKey);
+		Assert.Equal(cipherKeys.PrivateKey, registry[SystemUserId1]!.PrivateKey);
+		Assert.Equal(1ul, registry.Count);
 	}
 
 	[Fact, TestOrder(26)]
 	public void TestEncryptionKeyAddToRegistryAgain()
 	{
 		var cipherKeys = (CipherKeys)_fixture.Data[PubPrivateDictionaryKey] with { PublicKey = "pubkey2" };
-		var registry = _fixture.GetService<IEncryptionKeyRegistry>(_testOutputHelper)!;
-		registry[RegistryKey2] = cipherKeys;
-		Assert.Equal(2, registry.Count);
-		Assert.NotEqual(registry[RegistryKey2], registry[RegistryKey1]);
+		var registry = _fixture.GetService<IRegistry<CipherKeysTracker>>(_testOutputHelper)!;
+		registry[SystemUserId2] = CipherKeysTracker.Create(SystemUserId1, cipherKeys);
+		Assert.Equal(cipherKeys.PublicKey, registry[SystemUserId2]!.PublicKey);
+		Assert.Equal(cipherKeys.PrivateKey, registry[SystemUserId2]!.PrivateKey);
+		Assert.Equal(2ul, registry.Count);
+		Assert.NotEqual(registry[SystemUserId2], registry[SystemUserId1]);
 	}
 #if DEBUG
 	[Fact, TestOrder(30)]
@@ -125,6 +131,40 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 		var client2PublicKey = await client1!.RequestPublicKeyAsync(user2connection.User, CancellationToken.None);
 		Assert.NotNull(client2PublicKey);
 		Assert.NotEmpty(client2PublicKey);
+	}
+
+	[Fact, TestOrder(30)]
+	public async Task GetOnlineStatusAsync()
+	{
+		const string Space = "space102";
+		const string Suite = "connectiontest102";
+		await using var client1 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, new ConnectionParameters
+		{
+			Id = Guid.NewGuid().ToString(),
+			User = "userA",
+			Metadata = new()
+			{
+				ClientId = Guid.NewGuid().ToString(),
+				Suite = Suite,
+				SpaceId = Space
+			}
+		});
+		var user2connection = new ConnectionParameters
+		{
+			Id = Guid.NewGuid().ToString(),
+			User = "userB",
+			Metadata = new()
+			{
+				ClientId = Guid.NewGuid().ToString(),
+				Suite = Suite,
+				SpaceId = Space
+			}
+		};
+		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, user2connection);
+		await client1!.ConnectAsync(CancellationToken.None);
+		await client2!.ConnectAsync(CancellationToken.None);
+		var isOnline = await client1!.IsUserOnlineAsync(user2connection.User, CancellationToken.None);
+		Assert.True(isOnline);
 	}
 #endif
 
@@ -171,5 +211,22 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 		Assert.True(sent);
 		while (!messageReceived && !cancellationTokenSource.IsCancellationRequested){ }
 		Assert.True(messageReceived);
+	}
+
+	[Fact, TestOrder(50)]
+	public void SaveCipherKeys()
+	{
+		const string Key = "mykey";
+		using var registry = _fixture.GetService<IRegistry<CipherKeysTracker>>(_testOutputHelper)!;
+		registry.Recycle();
+		registry[Key] = new()
+		{
+			OtherPartySystemUserId = Guid.NewGuid().ToString(),
+			PrivateKey = "privateKey",
+			PublicKey = "publickey"
+		};
+		Assert.Equal(1ul, registry.Count);
+		var record = registry[Key];
+		Assert.NotNull(record);
 	}
 }
