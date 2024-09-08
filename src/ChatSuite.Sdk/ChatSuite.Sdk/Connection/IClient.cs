@@ -9,7 +9,8 @@ public interface IClient : IAsyncDisposable, IDisposable
 	ConnectionParameters? ConnectionParameters { init; }
 	Func<Task<string?>>? AccessTokenProvider { set; }
 	IPlugin<(string encryptionPublicKey, string stringToEncrypt), string>? EncryptionPlugin { init; }
-
+	IRegistry<CipherKeysTracker>? CipherKeysRegistry { init; }
+	IPlugin<MessageBase, string>? SystemUserIdProviderPlugin { init; }
 	void Build();
 	bool IsConnected();
 	bool IsDisconnected();

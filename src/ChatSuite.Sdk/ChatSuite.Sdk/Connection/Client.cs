@@ -1,4 +1,3 @@
-using ChatSuite.Sdk.Connection.Events;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace ChatSuite.Sdk.Connection;
@@ -17,6 +16,8 @@ internal class Client : IClient
 	public Func<Task<string?>>? AccessTokenProvider { private get; set; }
 	public IPlugin<(string encryptionPublicKey, string stringToEncrypt), string>? EncryptionPlugin { private get; init; }
 	internal string? SystemUserId { private get; set; }
+	public IRegistry<CipherKeysTracker>? CipherKeysRegistry { private get; init; }
+	public IPlugin<MessageBase, string>? SystemUserIdProviderPlugin { get; init; }
 
 	public void Build()
 	{
@@ -82,7 +83,7 @@ internal class Client : IClient
 	{
 		if (IsConnected())
 		{
-			await _hubConnection!.SendAsync(ServerMethods.SendMessageToUserInGroup.ToString(), otherChatParty, Newtonsoft.Json.JsonConvert.SerializeObject(message), cancellationToken);
+			await _hubConnection!.SendAsync(ServerMethods.SendMessageToUserInGroup.ToString(), otherChatParty, Newtonsoft.Json.JsonConvert.SerializeObject(PreserveGroup(message)), cancellationToken);
 			return true;
 		}
 		return false;
@@ -93,8 +94,8 @@ internal class Client : IClient
 		ArgumentNullException.ThrowIfNull(EncryptionPlugin, nameof(EncryptionPlugin));
 		if (IsConnected())
 		{
-			var publicKey = await RequestPublicKeyAsync(otherChatParty, cancellationToken);
-			var encryptedMessage = await message.EncryptAndSerializeAsync(publicKey!, EncryptionPlugin, cancellationToken);
+			var publicKey = await ConcludePublicKeyAsync(otherChatParty, cancellationToken);
+			var encryptedMessage = await PreserveGroup(message).EncryptAndSerializeAsync(publicKey!, EncryptionPlugin, cancellationToken);
 			if (encryptedMessage is not null)
 			{
 				await _hubConnection!.SendAsync(ServerMethods.SendMessageToUserInGroup.ToString(), otherChatParty, encryptedMessage, cancellationToken: cancellationToken);
@@ -109,7 +110,7 @@ internal class Client : IClient
 	{
 		if (IsConnected())
 		{
-			await _hubConnection!.SendAsync(ServerMethods.SendMessageToGroup.ToString(), Newtonsoft.Json.JsonConvert.SerializeObject(message), cancellationToken);
+			await _hubConnection!.SendAsync(ServerMethods.SendMessageToGroup.ToString(), Newtonsoft.Json.JsonConvert.SerializeObject(PreserveGroup(message)), cancellationToken);
 			return true;
 		}
 		return false;
@@ -119,7 +120,7 @@ internal class Client : IClient
 	{
 		if (IsConnected())
 		{
-			var encryptedMessage = await message.EncryptAndSerializeAsync("publicKey", encryptionPlugin, cancellationToken);
+			var encryptedMessage = await PreserveGroup(message).EncryptAndSerializeAsync("publicKey", encryptionPlugin, cancellationToken);
 			if (encryptedMessage is not null)
 			{
 				await _hubConnection!.SendAsync(ServerMethods.SendMessageToUserInGroup.ToString(), encryptedMessage, cancellationToken, onError);
@@ -229,6 +230,39 @@ internal class Client : IClient
 			}
 		}
 		return isOnline;
+	}
+
+	private async Task<string?> ConcludePublicKeyAsync(string otherChatParty,CancellationToken cancellationToken, int requestLifetimeInMilliseconds = 10000)
+	{
+		ArgumentNullException.ThrowIfNull(CipherKeysRegistry, nameof(CipherKeysRegistry));
+		ArgumentNullException.ThrowIfNull(SystemUserIdProviderPlugin, nameof(SystemUserIdProviderPlugin));
+		ArgumentNullException.ThrowIfNull(ConnectionParameters, nameof(ConnectionParameters));
+		SystemUserIdProviderPlugin.Input = ConnectionParameters with { User = otherChatParty };
+		var otherChatPartySystemUserId = ((await SystemUserIdProviderPlugin.RunAsync(cancellationToken))?.Result) ?? throw new ApplicationException($"Failed to conclude the system userId for {otherChatParty}");
+		if (await IsUserOnlineAsync(otherChatParty, cancellationToken, requestLifetimeInMilliseconds))
+		{
+			var publicKey = await RequestPublicKeyAsync(otherChatParty, cancellationToken, requestLifetimeInMilliseconds);
+			CipherKeysRegistry[otherChatPartySystemUserId] = new()
+			{
+				OtherPartySystemUserId = otherChatPartySystemUserId,
+				PublicKey = publicKey
+			};
+			return publicKey;
+		}
+		else
+		{
+			return CipherKeysRegistry[otherChatPartySystemUserId]?.PublicKey;
+		}
+	}
+
+	private ChatMessage PreserveGroup(ChatMessage chatMessage)
+	{
+		chatMessage.Metadata ??= new()
+		{
+			SpaceId = ConnectionParameters?.Metadata?.SpaceId,
+			Suite = ConnectionParameters?.Metadata?.Suite
+		};
+		return chatMessage;
 	}
 
 	private async Task<string?> SendPublicKeyRequestAsync(string otherChatParty, CancellationToken cancellationToken)

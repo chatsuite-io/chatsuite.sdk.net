@@ -1,5 +1,4 @@
-﻿using ChatSuite.Sdk.Connection.Events;
-using ChatSuite.Sdk.Extensions.Client;
+﻿using ChatSuite.Sdk.Extensions.Client;
 
 namespace ChatSuite.Sdk.Connection;
 
@@ -7,6 +6,8 @@ internal class ChatClientBuilder(
 	IPlugin<MessageBase, string> systemUserIdProvider,
 	IAccessTokenProvider accessTokenProvider,
 	IValidator<ConnectionParameters> connectionParametersValidator,
+	IRegistry<CipherKeysTracker>? cipherKeysRegistry,
+	IPlugin<MessageBase, string> systemUserIdProviderPlugin,
 	[FromKeyedServices(Extensions.DependencyInjection.DependencyInjectionExtensions.EncryptionPluginKey)] IPlugin<(string encryptionPublicKey, string stringToEncrypt), string> encryptionPlugin,
 	[FromKeyedServices(nameof(PublicKeyAcquisitionEvent))] IEvent publicKeyAcquisitionEvent,
 	[FromKeyedServices(nameof(PublicKeyReceivedEvent))] IEvent publicKeyReceivedEvent,
@@ -31,7 +32,9 @@ internal class ChatClientBuilder(
 					ConnectionParameters = Input!,
 					AccessTokenProvider = () => accessTokenProvider.GetAccessTokenAsync(cancellationToken),
 					SystemUserId = systemUserId.Result!,
-					EncryptionPlugin = encryptionPlugin
+					EncryptionPlugin = encryptionPlugin,
+					CipherKeysRegistry = cipherKeysRegistry,
+					SystemUserIdProviderPlugin = systemUserIdProviderPlugin
 				};
 				client.Build();
 				client

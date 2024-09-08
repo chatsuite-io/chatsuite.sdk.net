@@ -1,4 +1,5 @@
-﻿global using ChatSuite.Sdk.Core;
+﻿global using ChatSuite.Sdk.Connection.Events;
+global using ChatSuite.Sdk.Core;
 global using ChatSuite.Sdk.Core.Logging;
 global using ChatSuite.Sdk.Core.Message;
 global using ChatSuite.Sdk.Extensions;
