@@ -15,8 +15,8 @@ internal class PublicKeyAcquisitionEvent(IRegistry<CipherKeysTracker> encryption
 		var jsonElement = (JsonElement)argument;
 		var requesterSystemUserId = jsonElement.GetString()!;
 		var cipherKeys = await encryptionKeyGeneratorPlugin.RunAsync(CancellationToken.None);
-		encryptionKeyRegistry[requesterSystemUserId] = CipherKeysTracker.Create(requesterSystemUserId, cipherKeys.Result) ?? throw new ArgumentNullException();
-		OnResultReady?.Invoke(Task.FromResult<object>(new SharedPublicKey(requesterSystemUserId, cipherKeys.Result.PublicKey)));
+		encryptionKeyRegistry[requesterSystemUserId] = CipherKeysTracker.Create(requesterSystemUserId, cipherKeys.Result!) ?? throw new ArgumentNullException();
+		OnResultReady?.Invoke(Task.FromResult<object>(new SharedPublicKey(requesterSystemUserId, cipherKeys.Result!.PublicKey)));
 	}
 
 	public record SharedPublicKey(string RequesterSystemUserId, string PublicKey);
