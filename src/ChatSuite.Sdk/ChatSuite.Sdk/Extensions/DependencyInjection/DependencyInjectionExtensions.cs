@@ -1,5 +1,4 @@
 ﻿using ChatSuite.Sdk.Connection;
-using ChatSuite.Sdk.Connection.Events;
 using ChatSuite.Sdk.Security.Encryption;
 using ChatSuite.Sdk.Security.EntraId;
 
@@ -15,9 +14,11 @@ public static class DependencyInjectionExtensions
 		.AddSingleton<IValidator<ConnectionParameters>, ConnectionParametersValidator>()
 		.AddUserIdProviders()
 		.AddTransient<IPlugin<EntraIdDaemonTokenAcquisitionSettings, string?>, EntraIdDaemonTokenAcquisitionPlugin>()
+		.AddKeyedTransient<IEvent, UserConnectedEvent>(nameof(UserConnectedEvent))
+		.AddKeyedTransient<IEvent, UserDisconnectedEvent>(nameof(UserDisconnectedEvent))
 		.AddKeyedTransient<IEvent, PublicKeyAcquisitionEvent>(nameof(PublicKeyAcquisitionEvent))
 		.AddKeyedTransient<IEvent, PublicKeyReceivedEvent>(nameof(PublicKeyReceivedEvent))
-		.AddKeyedTransient<IEvent, UserToUserMessageReceivedEvent>(nameof(UserToUserMessageReceivedEvent))
+		.AddKeyedTransient<IEvent, MessageDeliveredToUserEvent>(nameof(MessageDeliveredToUserEvent))
 		.AddKeyedTransient<IEvent, UserOnlineOfflineStatusReportReceived>(nameof(UserOnlineOfflineStatusReportReceived));
 
 	public static IServiceCollection AddEntraIdDaemonAccessTokenProvider(this IServiceCollection services, IConfiguration configuration) => services

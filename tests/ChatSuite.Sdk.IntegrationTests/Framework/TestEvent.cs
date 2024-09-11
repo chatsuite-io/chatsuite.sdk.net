@@ -4,6 +4,7 @@ namespace ChatSuite.Sdk.IntegrationTests.Framework;
 
 internal abstract class TestEvent(ITestOutputHelper testOutputHelper) : IEvent
 {
+	protected readonly ITestOutputHelper _testOutputHelper = testOutputHelper;
 	public abstract string? Target {  get; }
 
 	public event Action<Task<object>>? OnResultReady;
@@ -11,7 +12,7 @@ internal abstract class TestEvent(ITestOutputHelper testOutputHelper) : IEvent
 
 	public virtual Task HandleAsync(object argument)
 	{
-		testOutputHelper.WriteLine("@argument", argument);
+		_testOutputHelper.WriteLine("@argument", argument);
 		OnResultReady?.Invoke(Task.FromResult(argument));
 		return Task.CompletedTask;
 	}
