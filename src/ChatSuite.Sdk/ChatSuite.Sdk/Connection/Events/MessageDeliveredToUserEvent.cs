@@ -2,7 +2,7 @@
 
 namespace ChatSuite.Sdk.Connection.Events;
 
-internal class UserToUserMessageReceivedEvent(
+internal class MessageDeliveredToUserEvent(
 	IRegistry<CipherKeysTracker> encryptionKeyRegistry,
 	IPlugin<MessageBase, string> systemUserIdProvider,
 	[FromKeyedServices(DependencyInjectionExtensions.DecryptionPluginKey)]IPlugin<(string encryptionPrivateKey, string encryptedString), string> decryptionPlugin) : IEvent

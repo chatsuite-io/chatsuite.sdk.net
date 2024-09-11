@@ -1,5 +1,3 @@
-using ChatSuite.Sdk.Core;
-using ChatSuite.Sdk.IntegrationTests.Framework;
 using Xunit.Microsoft.DependencyInjection.Attributes;
 
 namespace ChatSuite.Sdk.IntegrationTests;
@@ -40,47 +38,34 @@ public class ConnectionTests(ITestOutputHelper testOutputHelper, ReliableConnect
 				SpaceId = "space1"
 			}
 		};
-		var disconnection1 = new UserDisconnected(_testOutputHelper);
-		var connection1 = new UserConnected(_testOutputHelper);
-		await using var client1 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, connection1params, connection1, disconnection1);
-		var disconnection2 = new UserDisconnected(_testOutputHelper);
-		var connection2 = new UserConnected(_testOutputHelper);
-		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, connection2params, connection2, disconnection2);
+		var connected1 = false;
+		var connected2 = false;
+		var disconnected1 = false;
+		await using var client1 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, connection1params);
+		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, connection2params);
+		var connected1Event = client1!.GetUserConnectedEvent();
+		var connected2Event = client2!.GetUserConnectedEvent();
+		var disconnected1Event = client1!.GetUserConnectedEvent();
+		connected1Event.OnResultReady += async (o) => connected1 = true;
+		connected1Event.OnResultReady += async (o) => connected2 = true;
+		disconnected1Event.OnResultReady += async (o) => disconnected1 = true;
+		var token1 = new CancellationTokenSource();
+		var token2 = new CancellationTokenSource();
+		var token3 = new CancellationTokenSource();
+		var token4 = new CancellationTokenSource();
 		await client1!.ConnectAsync(CancellationToken.None);
 		await client2!.ConnectAsync(CancellationToken.None);
-		var connected1 = await connection1.WaitAsync(() => connection1.Connected, CancellationToken.None);
-		var connected2 = await connection2.WaitAsync(() => connection2.Connected, CancellationToken.None);
+		token1.CancelAfter(10000);
+		while (!token1.IsCancellationRequested && !connected1){ }
+		token2.CancelAfter(10000);
+		while (!token2.IsCancellationRequested && !connected2){ }
 		Assert.True(connected1);
 		Assert.True(connected2);
-		//await client1!.StopAsync(CancellationToken.None);
-		//await client2!.StopAsync(CancellationToken.None);
-		//var disconnected1 = await disconnection1.WaitAsync(() => disconnection1.Disconnected, CancellationToken.None);
-		//var disconnected2 = await disconnection2.WaitAsync(() => disconnection2.Disconnected, CancellationToken.None);
-		//Assert.True(disconnected1);
-		//Assert.True(disconnected2);
-	}
-
-	private class UserConnected(ITestOutputHelper testOutputHelper) : TestEvent(testOutputHelper)
-	{
-		public override string? Target => TargetEvent.OnUserConnected.ToString();
-		public bool Connected { get; private set; }
-
-		public override Task HandleAsync(object argument)
-		{
-			Connected = true;
-			return base.HandleAsync(argument);
-		}
-	}
-
-	private class UserDisconnected(ITestOutputHelper testOutputHelper) : TestEvent(testOutputHelper)
-	{
-		public override string? Target => TargetEvent.OnUserDisconnected.ToString();
-		public bool Disconnected { get; private set; }
-
-		public override Task HandleAsync(object argument)
-		{			
-			Disconnected = true;
-			return base.HandleAsync(argument);
-		}
+		token3.CancelAfter(15000);
+		token4.CancelAfter(15000);
+		await client1!.StopAsync(CancellationToken.None);
+		await client2!.StopAsync(CancellationToken.None);
+		while (!token3.IsCancellationRequested && !disconnected1){ }
+		Assert.True(disconnected1);
 	}
 }

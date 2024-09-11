@@ -1,12 +1,14 @@
 ﻿using ChatSuite.Sdk.Core;
 using ChatSuite.Sdk.Core.Message;
 using ChatSuite.Sdk.IntegrationTests.Framework;
+using Xunit.Microsoft.DependencyInjection.Attributes;
 
 namespace ChatSuite.Sdk.IntegrationTests;
 
+[TestCaseOrderer("Xunit.Microsoft.DependencyInjection.TestsOrder.TestPriorityOrderer", "Xunit.Microsoft.DependencyInjection")]
 public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnectionFixture fixture) : TestBed<ReliableConnectionFixture>(testOutputHelper, fixture)
 {
-	[Fact]
+	[Fact, TestOrder(1)]
 	public async Task SendMessageFromUserToUserAsync()
 	{
 		const string Space = "space101";
@@ -21,7 +23,7 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 				Suite = Suite,
 				SpaceId = Space
 			}
-		}, new UserMessageReceived(_testOutputHelper));
+		});
 		var user2connection = new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
@@ -33,18 +35,21 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 				SpaceId = Space
 			}
 		};
-		var @event = new UserMessageReceived(_testOutputHelper);
-		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper,sustainInFixture: false, user2connection, @event);
+		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper,sustainInFixture: false, user2connection);
+		var received = false;
+		client2!.GetMessageDeliveredEvent().OnResultReady += async obj => { received = true; };
 		await client1!.ConnectAsync(CancellationToken.None);
 		await client2!.ConnectAsync(CancellationToken.None);
 		var sent = await client1.SendMessageToUserAsync("userB", new ChatMessage { Id = Guid.NewGuid().ToString(), Body = ["This is a test"] }, CancellationToken.None);
 		Assert.True(sent);
-		var received = await @event.WaitAsync(() => @event.Received && sent, CancellationToken.None);
+		var timeoutToken = new CancellationTokenSource();
+		timeoutToken.CancelAfter(TimeSpan.FromSeconds(5));
+		while (!timeoutToken.IsCancellationRequested && !received){ }
 		Assert.True(received);
 	}
 
 	//Note: this test may exhibit some timing issues and therefore we may want to run it manually with breakpoints
-	[Fact]
+	[Fact, TestOrder(10)]
 	public async Task SendMessageFromUserToGroupAsync()
 	{
 		const string Space = "space102";
@@ -93,12 +98,12 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		await Task.Delay(1000);
 		var sent = await client1.SendMessageToGroupAsync(new ChatMessage { Body = ["This is a group test"] }, CancellationToken.None);
 		Assert.True(sent);
-		var recieved1 = await user2event.WaitAsync(() => user2event.Received && sent, CancellationToken.None);
-		var recieved2 = await user3event.WaitAsync(() => user3event.Received && sent, CancellationToken.None);
-		Assert.True(recieved1 && recieved2);
+		var received1 = await user2event.WaitAsync(() => user2event.Received && sent, CancellationToken.None);
+		var received2 = await user3event.WaitAsync(() => user3event.Received && sent, CancellationToken.None);
+		Assert.True(received1 && received2);
 	}
 
-	[Fact]
+	[Fact, TestOrder(20)]
 	public async Task SendMessageFromUserToGroupWithOfflineUsersAsync()
 	{
 		//Note: Running this test requires the observation of the storage account's table manually
@@ -136,7 +141,7 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		Assert.True(sent);
 	}
 
-	[Fact]
+	[Fact, TestOrder(30)]
 	public async Task SendUserStatusToGroupAsync()
 	{
 		const string Space = "space103";
@@ -185,12 +190,12 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		await Task.Delay(1000);
 		var reported = await client1!.ReportStatusToGroupAsync(new StatusDetails { Description = "Running Tests", Title = "Testing" }, CancellationToken.None);
 		Assert.True(reported);
-		var recieved1 = await user2event.WaitAsync(() => user2event.Received && reported, CancellationToken.None);
-		var recieved2 = await user3event.WaitAsync(() => user3event.Received && reported, CancellationToken.None);
-		Assert.True(recieved1 && recieved2);
+		var received1 = await user2event.WaitAsync(() => user2event.Received && reported, CancellationToken.None);
+		var received2 = await user3event.WaitAsync(() => user3event.Received && reported, CancellationToken.None);
+		Assert.True(received1 && received2);
 	}
 
-	[Fact]
+	[Fact, TestOrder(40)]
 	public async Task SendUserStatusToUserAsync()
 	{
 		const string Space = "space104";

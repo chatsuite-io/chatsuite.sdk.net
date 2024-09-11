@@ -9,9 +9,11 @@ internal class ChatClientBuilder(
 	IRegistry<CipherKeysTracker>? cipherKeysRegistry,
 	IPlugin<MessageBase, string> systemUserIdProviderPlugin,
 	[FromKeyedServices(Extensions.DependencyInjection.DependencyInjectionExtensions.EncryptionPluginKey)] IPlugin<(string encryptionPublicKey, string stringToEncrypt), string> encryptionPlugin,
+	[FromKeyedServices(nameof(UserConnectedEvent))] IEvent userConnectedEvent,
+	[FromKeyedServices(nameof(UserDisconnectedEvent))] IEvent userDisconnectedEvent,
 	[FromKeyedServices(nameof(PublicKeyAcquisitionEvent))] IEvent publicKeyAcquisitionEvent,
 	[FromKeyedServices(nameof(PublicKeyReceivedEvent))] IEvent publicKeyReceivedEvent,
-	[FromKeyedServices(nameof(UserToUserMessageReceivedEvent))] IEvent userToUserMessageReceivedEvent,
+	[FromKeyedServices(nameof(MessageDeliveredToUserEvent))] IEvent messageDeliveredToUserEvent,
 	[FromKeyedServices(nameof(UserOnlineOfflineStatusReportReceived))] IEvent userStatusReportReceivedEvent) : Plugin<ConnectionParameters, IClient?>, IInputValidator
 {
 	public List<string> RuleSets => [];
@@ -38,9 +40,11 @@ internal class ChatClientBuilder(
 				};
 				client.Build();
 				client
+					.RegisterEvent(userConnectedEvent)
+					.RegisterEvent(userDisconnectedEvent)
 					.RegisterEvent(publicKeyAcquisitionEvent)
 					.RegisterEvent(publicKeyReceivedEvent)
-					.RegisterEvent(userToUserMessageReceivedEvent)
+					.RegisterEvent(messageDeliveredToUserEvent)
 					.RegisterEvent(userStatusReportReceivedEvent);
 			}
 			catch (Exception ex)

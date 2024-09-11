@@ -26,16 +26,11 @@ public class ReliableConnectionFixture : TestBedFixture
 			connection.Endpoint = connectionSettings.Value.Endpoint;
 			connection.SecretKey = connectionSettings.Value.SecretKey;
 			_client = await chatClientBuilder.BuildAsync(connection, error => { });
-			var userConnectedEvent = new UserConnected(testOutputHelper);
-			var userDisconnectedEvent = new UserDisconnected(testOutputHelper);
 			_client!.Closed += ex =>
 			{
 				testOutputHelper.WriteLine($"Exception: {ex?.Message}");
 				return Task.CompletedTask;
 			};
-			_client!
-				.RegisterEvent(userConnectedEvent)
-				.RegisterEvent(userDisconnectedEvent);
 			foreach (var @event in events)
 			{
 				_client!.RegisterEvent(@event);
@@ -60,40 +55,4 @@ public class ReliableConnectionFixture : TestBedFixture
 	}
 
 	protected override void AddUserSecrets(IConfigurationBuilder configurationBuilder) => configurationBuilder.AddUserSecrets<ReliableConnectionFixture>();
-
-	private class UserConnected(ITestOutputHelper testOutputHelper) : IEvent
-	{
-		public string? Target => TargetEvent.OnUserConnected.ToString();
-		public bool Connected { get; private set; }
-
-		public event Action<Task<object>>? OnResultReady;
-		public event Action<string>? OnErrored;
-
-		public Task HandleAsync(object argument)
-		{
-			ArgumentNullException.ThrowIfNullOrEmpty(Target, nameof(Target));
-			testOutputHelper.WriteLine("@argument", argument);
-			Connected = true;
-			OnResultReady?.Invoke(Task.FromResult<object>(Connected));
-			return Task.CompletedTask;
-		}
-	}
-
-	private class UserDisconnected(ITestOutputHelper testOutputHelper) : IEvent
-	{
-		public string? Target => TargetEvent.OnUserDisconnected.ToString();
-		public bool Disconnected { get; private set; }
-
-		public event Action<Task<object>>? OnResultReady;
-		public event Action<string>? OnErrored;
-
-		public Task HandleAsync(object argument)
-		{
-			ArgumentNullException.ThrowIfNullOrEmpty(Target, nameof(Target));
-			testOutputHelper.WriteLine("@argument", argument);
-			Disconnected = true;
-			OnResultReady?.Invoke(Task.FromResult<object>(Disconnected));
-			return Task.CompletedTask;
-		}
-	}
 }

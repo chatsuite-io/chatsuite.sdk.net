@@ -202,7 +202,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 		var messageReceived = false;
 		var cancellationTokenSource = new CancellationTokenSource();
 		cancellationTokenSource.CancelAfter(15000);
-		client2!.GetChatMessageReceivedEvent().OnResultReady += async o =>
+		client2!.GetMessageDeliveredEvent().OnResultReady += async o =>
 		{
 			var result = await o;
 			messageReceived = result is not null;
