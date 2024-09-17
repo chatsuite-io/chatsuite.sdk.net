@@ -203,7 +203,7 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		var user1connection = new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
-			User = "userA",
+			User = "user1A",
 			Metadata = new()
 			{
 				ClientId = Guid.NewGuid().ToString(),
@@ -215,7 +215,7 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		var user2connection = new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
-			User = "userB",
+			User = "user1B",
 			Metadata = new()
 			{
 				ClientId = Guid.NewGuid().ToString(),
