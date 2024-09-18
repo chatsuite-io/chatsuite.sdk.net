@@ -17,9 +17,10 @@ public interface IClient : IAsyncDisposable, IDisposable
 	Task StopAsync(CancellationToken cancellationToken);
 	Task ConnectAsync(CancellationToken cancellationToken);
 	void On(IEvent @event);
-	IEvent GetUserConnectedEvent();
-	IEvent GetUserDisconnectedEvent();
-	IEvent GetMessageDeliveredEvent();
+	IEvent AcquireUserConnectedEvent();
+	IEvent AcquireUserDisconnectedEvent();
+	IEvent AcquireUserMessageDeliveredEvent();
+	IEvent AcquireGroupMessageDeliveredEvent();
 	Task<bool> SendMessageToUserAsync(string recipient, ChatMessage message, CancellationToken cancellationToken);
 	Task<bool> SendEncryptedMessageToUserAsync(string recipient, ChatMessage message, CancellationToken cancellationToken);
 	Task<bool> SendMessageToGroupAsync(ChatMessage message, CancellationToken cancellationToken);

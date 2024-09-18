@@ -172,9 +172,10 @@ internal class Client : IClient
 
 	public Task StopAsync(CancellationToken cancellationToken) => _hubConnection?.StopAsync(cancellationToken) ?? Task.CompletedTask;
 
-	public IEvent GetUserConnectedEvent() => _messageHandlers[TargetEvent.OnUserConnected.ToString()].Event;
-	public IEvent GetUserDisconnectedEvent() => _messageHandlers[TargetEvent.OnUserDisconnected.ToString()].Event;
-	public IEvent GetMessageDeliveredEvent() => _messageHandlers[TargetEvent.MessageDeliveredToUser.ToString()].Event;
+	public IEvent AcquireUserConnectedEvent() => _messageHandlers[TargetEvent.OnUserConnected.ToString()].Event;
+	public IEvent AcquireUserDisconnectedEvent() => _messageHandlers[TargetEvent.OnUserDisconnected.ToString()].Event;
+	public IEvent AcquireUserMessageDeliveredEvent() => _messageHandlers[TargetEvent.MessageDeliveredToUser.ToString()].Event;
+	public IEvent AcquireGroupMessageDeliveredEvent() => _messageHandlers[TargetEvent.MessageDeliveredToGroup.ToString()].Event;
 
 #if DEBUG
 	public

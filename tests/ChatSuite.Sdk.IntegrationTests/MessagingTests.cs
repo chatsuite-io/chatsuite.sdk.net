@@ -37,7 +37,7 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		};
 		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper,sustainInFixture: false, user2connection);
 		var received = false;
-		client2!.GetMessageDeliveredEvent().OnResultReady += async obj => { received = true; };
+		client2!.AcquireUserMessageDeliveredEvent().OnResultReady += async obj => { received = true; };
 		await client1!.ConnectAsync(CancellationToken.None);
 		await client2!.ConnectAsync(CancellationToken.None);
 		var sent = await client1.SendMessageToUserAsync("userB", new ChatMessage { Id = Guid.NewGuid().ToString(), Body = ["This is a test"] }, CancellationToken.None);
@@ -57,7 +57,7 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		var user1connection = new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
-			User = "userA",
+			User = "userA00",
 			Metadata = new()
 			{
 				ClientId = Guid.NewGuid().ToString(),
@@ -69,7 +69,7 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		var user2connection = new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
-			User = "userB",
+			User = "userB00",
 			Metadata = new()
 			{
 				ClientId = Guid.NewGuid().ToString(),
@@ -77,12 +77,11 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 				SpaceId = Space
 			}
 		};
-		var user2event = new GroupMessageReceived(_testOutputHelper);
-		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, user2connection, user2event);
+		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, user2connection);
 		var user3connection = new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
-			User = "userC",
+			User = "userC00",
 			Metadata = new()
 			{
 				ClientId = Guid.NewGuid().ToString(),
@@ -90,16 +89,23 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 				SpaceId = Space
 			}
 		};
-		var user3event = new GroupMessageReceived(_testOutputHelper);
-		await using var client3 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, user3connection, user3event);
+		await using var client3 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, user3connection);
+		var received1 = false;
+		var received2 = false;
+		client2!.AcquireGroupMessageDeliveredEvent().OnResultReady += async obj => { received1 = true; };
+		client3!.AcquireGroupMessageDeliveredEvent().OnResultReady += async obj => { received2 = true; };
 		await client1!.ConnectAsync(CancellationToken.None);
 		await client2!.ConnectAsync(CancellationToken.None);
 		await client3!.ConnectAsync(CancellationToken.None);
 		await Task.Delay(1000);
 		var sent = await client1.SendMessageToGroupAsync(new ChatMessage { Body = ["This is a group test"] }, CancellationToken.None);
-		Assert.True(sent);
-		var received1 = await user2event.WaitAsync(() => user2event.Received, CancellationToken.None);
-		var received2 = await user3event.WaitAsync(() => user3event.Received, CancellationToken.None);
+		Assert.True(sent);	
+		var timeoutToken1 = new CancellationTokenSource();
+		timeoutToken1.CancelAfter(TimeSpan.FromSeconds(10));
+		while (!timeoutToken1.IsCancellationRequested && !received1){ }
+		var timeoutToken2 = new CancellationTokenSource();
+		timeoutToken2.CancelAfter(TimeSpan.FromSeconds(10));
+		while (!timeoutToken2.IsCancellationRequested && !received2){ }
 		Assert.True(received1 && received2);
 	}
 
@@ -243,11 +249,6 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 			Received = true;
 			return base.HandleAsync(argument);
 		}
-	}
-
-	private class GroupMessageReceived(ITestOutputHelper testOutputHelper) : UserMessageReceived(testOutputHelper)
-	{
-		public override string? Target => TargetEvent.MessageDeliveredToGroup.ToString();
 	}
 
 	private class StatusReportReceived(ITestOutputHelper testOutputHelper) : UserMessageReceived(testOutputHelper)
