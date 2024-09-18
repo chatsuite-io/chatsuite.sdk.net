@@ -98,8 +98,8 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		await Task.Delay(1000);
 		var sent = await client1.SendMessageToGroupAsync(new ChatMessage { Body = ["This is a group test"] }, CancellationToken.None);
 		Assert.True(sent);
-		var received1 = await user2event.WaitAsync(() => user2event.Received && sent, CancellationToken.None);
-		var received2 = await user3event.WaitAsync(() => user3event.Received && sent, CancellationToken.None);
+		var received1 = await user2event.WaitAsync(() => user2event.Received, CancellationToken.None);
+		var received2 = await user3event.WaitAsync(() => user3event.Received, CancellationToken.None);
 		Assert.True(received1 && received2);
 	}
 
