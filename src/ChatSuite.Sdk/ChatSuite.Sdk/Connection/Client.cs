@@ -176,6 +176,7 @@ internal class Client : IClient
 	public IEvent AcquireUserDisconnectedEvent() => _messageHandlers[TargetEvent.OnUserDisconnected.ToString()].Event;
 	public IEvent AcquireUserMessageDeliveredEvent() => _messageHandlers[TargetEvent.MessageDeliveredToUser.ToString()].Event;
 	public IEvent AcquireGroupMessageDeliveredEvent() => _messageHandlers[TargetEvent.MessageDeliveredToGroup.ToString()].Event;
+	public IEvent AcquireStatusReportReceivedEvent() => _messageHandlers[TargetEvent.UserStatusReported.ToString()].Event;
 
 #if DEBUG
 	public
