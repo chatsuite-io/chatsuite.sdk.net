@@ -43,9 +43,9 @@ public class ConnectionTests(ITestOutputHelper testOutputHelper, ReliableConnect
 		var disconnected1 = false;
 		await using var client1 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, connection1params);
 		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, connection2params);
-		var connected1Event = client1!.GetUserConnectedEvent();
-		var connected2Event = client2!.GetUserConnectedEvent();
-		var disconnected1Event = client1!.GetUserConnectedEvent();
+		var connected1Event = client1!.AcquireUserConnectedEvent();
+		var connected2Event = client2!.AcquireUserConnectedEvent();
+		var disconnected1Event = client1!.AcquireUserConnectedEvent();
 		connected1Event.OnResultReady += async (o) => connected1 = true;
 		connected1Event.OnResultReady += async (o) => connected2 = true;
 		disconnected1Event.OnResultReady += async (o) => disconnected1 = true;
