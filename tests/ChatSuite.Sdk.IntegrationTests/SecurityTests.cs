@@ -141,7 +141,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 		await using var client1 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
-			User = "userA",
+			User = "userAA",
 			Metadata = new()
 			{
 				ClientId = Guid.NewGuid().ToString(),
@@ -152,7 +152,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 		var user2connection = new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
-			User = "userB",
+			User = "userBB",
 			Metadata = new()
 			{
 				ClientId = Guid.NewGuid().ToString(),
@@ -171,12 +171,13 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	[Fact, TestOrder(40)]
 	public async Task SendEncryptedMessageAsync()
 	{
+		const string OtherUser = "userBBB";
 		const string Space = "space102";
 		const string Suite = "connectiontest102";
 		await using var client1 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
-			User = "userA",
+			User = "userAAA",
 			Metadata = new()
 			{
 				ClientId = Guid.NewGuid().ToString(),
@@ -187,7 +188,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 		var user2connection = new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
-			User = "userB",
+			User = OtherUser,
 			Metadata = new()
 			{
 				ClientId = Guid.NewGuid().ToString(),
@@ -207,7 +208,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 			var result = await o;
 			messageReceived = result is not null;
 		};
-		var sent = await client1.SendEncryptedMessageToUserAsync("userB", new ChatMessage { Id = Guid.NewGuid().ToString(), Body = [MessageToSend] }, CancellationToken.None);
+		var sent = await client1.SendEncryptedMessageToUserAsync(OtherUser, new ChatMessage { Id = Guid.NewGuid().ToString(), Body = [MessageToSend] }, CancellationToken.None);
 		Assert.True(sent);
 		while (!messageReceived && !cancellationTokenSource.IsCancellationRequested){ }
 		Assert.True(messageReceived);

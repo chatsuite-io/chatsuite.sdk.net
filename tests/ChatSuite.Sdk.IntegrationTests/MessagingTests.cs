@@ -98,8 +98,8 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		await Task.Delay(1000);
 		var sent = await client1.SendMessageToGroupAsync(new ChatMessage { Body = ["This is a group test"] }, CancellationToken.None);
 		Assert.True(sent);
-		var received1 = await user2event.WaitAsync(() => user2event.Received && sent, CancellationToken.None);
-		var received2 = await user3event.WaitAsync(() => user3event.Received && sent, CancellationToken.None);
+		var received1 = await user2event.WaitAsync(() => user2event.Received, CancellationToken.None);
+		var received2 = await user3event.WaitAsync(() => user3event.Received, CancellationToken.None);
 		Assert.True(received1 && received2);
 	}
 
@@ -203,7 +203,7 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		var user1connection = new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
-			User = "userA",
+			User = "user1A",
 			Metadata = new()
 			{
 				ClientId = Guid.NewGuid().ToString(),
@@ -215,7 +215,7 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		var user2connection = new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
-			User = "userB",
+			User = "user1B",
 			Metadata = new()
 			{
 				ClientId = Guid.NewGuid().ToString(),
