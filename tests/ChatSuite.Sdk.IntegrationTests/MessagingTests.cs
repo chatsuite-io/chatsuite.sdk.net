@@ -1,6 +1,4 @@
-﻿using ChatSuite.Sdk.Core;
-using ChatSuite.Sdk.Core.Message;
-using ChatSuite.Sdk.IntegrationTests.Framework;
+﻿using ChatSuite.Sdk.Core.Message;
 using Xunit.Microsoft.DependencyInjection.Attributes;
 
 namespace ChatSuite.Sdk.IntegrationTests;
