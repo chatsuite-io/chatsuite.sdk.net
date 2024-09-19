@@ -13,7 +13,7 @@ public class ReliableConnectionFixture : TestBedFixture
 
 	public Dictionary<string, object> Data { get; } = [];
 
-	public async Task<IClient?> GetClientAsync(ITestOutputHelper testOutputHelper, bool sustainInFixture = true, ConnectionParameters? connectionParameters = null, params IEvent[] events)
+	public async Task<IClient?> GetClientAsync(ITestOutputHelper testOutputHelper, bool sustainInFixture = true, ConnectionParameters? connectionParameters = null)
 	{
 		if (_client is null || !sustainInFixture)
 		{
@@ -31,10 +31,6 @@ public class ReliableConnectionFixture : TestBedFixture
 				testOutputHelper.WriteLine($"Exception: {ex?.Message}");
 				return Task.CompletedTask;
 			};
-			foreach (var @event in events)
-			{
-				_client!.RegisterEvent(@event);
-			}
 		}
 		return _client;
 	}
