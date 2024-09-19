@@ -141,7 +141,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 		await using var client1 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
-			User = "userAA",
+			User = Guid.NewGuid().ToString(),
 			Metadata = new()
 			{
 				ClientId = Guid.NewGuid().ToString(),
@@ -152,7 +152,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 		var user2connection = new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
-			User = "userBB",
+			User = Guid.NewGuid().ToString(),
 			Metadata = new()
 			{
 				ClientId = Guid.NewGuid().ToString(),
@@ -171,13 +171,13 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	[Fact, TestOrder(40)]
 	public async Task SendEncryptedMessageAsync()
 	{
-		const string OtherUser = "userBBB";
+		string OtherUser = Guid.NewGuid().ToString();
 		const string Space = "space102";
 		const string Suite = "connectiontest102";
 		await using var client1 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
-			User = "userAAA",
+			User = Guid.NewGuid().ToString(),
 			Metadata = new()
 			{
 				ClientId = Guid.NewGuid().ToString(),

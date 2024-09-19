@@ -1,6 +1,4 @@
-﻿using ChatSuite.Sdk.Core;
-using ChatSuite.Sdk.Core.Message;
-using ChatSuite.Sdk.IntegrationTests.Framework;
+﻿using ChatSuite.Sdk.Core.Message;
 using Xunit.Microsoft.DependencyInjection.Attributes;
 
 namespace ChatSuite.Sdk.IntegrationTests;
@@ -175,8 +173,7 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 				SpaceId = Space
 			}
 		};
-		var user2event = new StatusReportReceived(_testOutputHelper);
-		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, user2connection, user2event);
+		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, user2connection);
 		var user3connection = new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
@@ -188,16 +185,24 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 				SpaceId = Space
 			}
 		};
-		var user3event = new StatusReportReceived(_testOutputHelper);
-		await using var client3 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, user3connection, user3event);
+		await using var client3 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, user3connection);
+		var received1 = false;
+		var received2 = false;
+		client2!.AcquireStatusReportReceivedEvent().OnResultReady += async obj => { received1 = true; };
+		client3!.AcquireStatusReportReceivedEvent().OnResultReady += async obj => { received2 = true; };
 		await client1!.ConnectAsync(CancellationToken.None);
 		await client2!.ConnectAsync(CancellationToken.None);
 		await client3!.ConnectAsync(CancellationToken.None);
 		await Task.Delay(1000);
 		var reported = await client1!.ReportStatusToGroupAsync(new StatusDetails { Description = "Running Tests", Title = "Testing" }, CancellationToken.None);
+		var timeoutToken1 = new CancellationTokenSource();
+		timeoutToken1.CancelAfter(TimeSpan.FromSeconds(10));
+		while (!timeoutToken1.IsCancellationRequested && !received1){ }
+		var timeoutToken2 = new CancellationTokenSource();
+		timeoutToken2.CancelAfter(TimeSpan.FromSeconds(10));
+		while (!timeoutToken2.IsCancellationRequested && !received2){ }
+		Assert.True(received1 && received2);
 		Assert.True(reported);
-		var received1 = await user2event.WaitAsync(() => user2event.Received && reported, CancellationToken.None);
-		var received2 = await user3event.WaitAsync(() => user3event.Received && reported, CancellationToken.None);
 		Assert.True(received1 && received2);
 	}
 
@@ -229,30 +234,17 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 				SpaceId = Space
 			}
 		};
-		var user2event = new StatusReportReceived(_testOutputHelper);
-		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, user2connection, user2event);		
+		await using var client2 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, user2connection);
+		var received = false;
+		client2!.AcquireStatusReportReceivedEvent().OnResultReady += async obj => { received = true; };
 		await client1!.ConnectAsync(CancellationToken.None);
 		await client2!.ConnectAsync(CancellationToken.None);
 		await Task.Delay(1000);
 		var reported = await client1!.ReportStatusToUserAsync(user2connection.User/*the target username*/, new StatusDetails { Description = "Running Tests", Title = "Testing" }, CancellationToken.None);
+		var timeoutToken = new CancellationTokenSource();
+		timeoutToken.CancelAfter(TimeSpan.FromSeconds(10));
+		while (!timeoutToken.IsCancellationRequested && !received){ }
 		Assert.True(reported);
-		Assert.True(await user2event.WaitAsync(() => user2event.Received && reported, CancellationToken.None));
-	}
-
-	private class UserMessageReceived(ITestOutputHelper testOutputHelper) : TestEvent(testOutputHelper)
-	{
-		public override string? Target => TargetEvent.MessageDeliveredToUser.ToString();
-		public bool Received { get; private set; } = false;
-
-		public override Task HandleAsync(object argument)
-		{
-			Received = true;
-			return base.HandleAsync(argument);
-		}
-	}
-
-	private class StatusReportReceived(ITestOutputHelper testOutputHelper) : UserMessageReceived(testOutputHelper)
-	{
-		public override string? Target => TargetEvent.UserStatusReported.ToString();
+		Assert.True(received);
 	}
 }

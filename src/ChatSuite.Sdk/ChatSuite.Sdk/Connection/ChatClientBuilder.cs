@@ -15,6 +15,7 @@ internal class ChatClientBuilder(
 	[FromKeyedServices(nameof(PublicKeyReceivedEvent))] IEvent publicKeyReceivedEvent,
 	[FromKeyedServices(nameof(MessageDeliveredToUserEvent))] IEvent messageDeliveredToUserEvent,
 	[FromKeyedServices(nameof(MessageDeliveredToGroupEvent))] IEvent messageDeliveredToGroupEvent,
+	[FromKeyedServices(nameof(StatusReportReceivedEvent))] IEvent statusReportReceivedEvent,
 	[FromKeyedServices(nameof(UserOnlineOfflineStatusReportReceived))] IEvent userStatusReportReceivedEvent) : Plugin<ConnectionParameters, IClient?>, IInputValidator
 {
 	public List<string> RuleSets => [];
@@ -47,6 +48,7 @@ internal class ChatClientBuilder(
 					.RegisterEvent(publicKeyReceivedEvent)
 					.RegisterEvent(messageDeliveredToUserEvent)
 					.RegisterEvent(messageDeliveredToGroupEvent)
+					.RegisterEvent(statusReportReceivedEvent)
 					.RegisterEvent(userStatusReportReceivedEvent);
 			}
 			catch (Exception ex)
