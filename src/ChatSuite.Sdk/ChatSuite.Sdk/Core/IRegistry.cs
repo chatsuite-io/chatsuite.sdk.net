@@ -1,6 +1,6 @@
 ﻿namespace ChatSuite.Sdk.Core;
 
-public interface IRegistry<T> : IDisposable
+public interface IRegistry<T>
 {
 	T? this[string key] { get; set; }
 	ulong Count { get; }

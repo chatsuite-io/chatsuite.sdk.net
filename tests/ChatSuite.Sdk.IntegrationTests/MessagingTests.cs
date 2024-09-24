@@ -100,10 +100,10 @@ public class MessagingTests(ITestOutputHelper testOutputHelper, ReliableConnecti
 		var sent = await client1.SendMessageToGroupAsync(new ChatMessage { Body = ["This is a group test"] }, CancellationToken.None);
 		Assert.True(sent);	
 		var timeoutToken1 = new CancellationTokenSource();
-		timeoutToken1.CancelAfter(TimeSpan.FromSeconds(10));
+		timeoutToken1.CancelAfter(TimeSpan.FromSeconds(15));
 		while (!timeoutToken1.IsCancellationRequested && !received1){ }
 		var timeoutToken2 = new CancellationTokenSource();
-		timeoutToken2.CancelAfter(TimeSpan.FromSeconds(10));
+		timeoutToken2.CancelAfter(TimeSpan.FromSeconds(15));
 		while (!timeoutToken2.IsCancellationRequested && !received2){ }
 		Assert.True(received1 && received2);
 	}

@@ -219,7 +219,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	public void SaveCipherKeys()
 	{
 		const string Key = "mykey";
-		using var registry = _fixture.GetService<IRegistry<CipherKeysTracker>>(_testOutputHelper)!;
+		var registry = _fixture.GetService<IRegistry<CipherKeysTracker>>(_testOutputHelper)!;
 		registry.Recycle();
 		registry[Key] = new()
 		{
