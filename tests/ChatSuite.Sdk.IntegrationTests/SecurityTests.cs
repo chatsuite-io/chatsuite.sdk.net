@@ -9,6 +9,7 @@ using Xunit.Microsoft.DependencyInjection.Attributes;
 namespace ChatSuite.Sdk.IntegrationTests;
 
 [TestCaseOrderer("Xunit.Microsoft.DependencyInjection.TestsOrder.TestPriorityOrderer", "Xunit.Microsoft.DependencyInjection")]
+[Collection("Security Tests")]
 public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectionFixture fixture) : TestBed<ReliableConnectionFixture>(testOutputHelper, fixture)
 {
 	private const string TextToEncrypt = "Muskoka, once discovered, never forgotten!";
