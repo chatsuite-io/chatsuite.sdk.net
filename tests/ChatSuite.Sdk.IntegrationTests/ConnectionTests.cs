@@ -3,6 +3,7 @@ using Xunit.Microsoft.DependencyInjection.Attributes;
 namespace ChatSuite.Sdk.IntegrationTests;
 
 [TestCaseOrderer("Xunit.Microsoft.DependencyInjection.TestsOrder.TestPriorityOrderer", "Xunit.Microsoft.DependencyInjection")]
+[Collection("Connection Tests")]
 public class ConnectionTests(ITestOutputHelper testOutputHelper, ReliableConnectionFixture fixture) : TestBed<ReliableConnectionFixture>(testOutputHelper, fixture)
 {
 	[Fact, TestOrder(1)]
