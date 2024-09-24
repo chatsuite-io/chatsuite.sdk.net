@@ -6,10 +6,9 @@ namespace ChatSuite.Sdk.Core;
 public abstract class BreezeDBRegistry<TVal> : IRegistry<TVal>
 	where TVal : class
 {
-	private DBreezeEngine? _engine;
-	private bool disposedValue;
+	private static readonly DBreezeEngine? _engine = new("CipherKeysRegistry");
 
-	protected BreezeDBRegistry() => _engine = new DBreezeEngine(GetDatabaseName());
+	//protected BreezeDBRegistry() => _engine = new DBreezeEngine(GetDatabaseName());
 
 	public TVal? this[string key]
 	{
@@ -24,13 +23,6 @@ public abstract class BreezeDBRegistry<TVal> : IRegistry<TVal>
 			using var transaction = _engine?.GetTransaction();
 			return transaction?.Count(GetCollectionName()) ?? 0;
 		}
-	}
-
-	public void Dispose()
-	{
-		// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-		Dispose(disposing: true);
-		GC.SuppressFinalize(this);
 	}
 
 	public void Recycle()
@@ -68,28 +60,4 @@ public abstract class BreezeDBRegistry<TVal> : IRegistry<TVal>
 	}
 
 	protected abstract string GetCollectionName();
-	protected abstract string GetDatabaseName();
-
-	protected virtual void Dispose(bool disposing)
-	{
-		if (!disposedValue)
-		{
-			if (disposing)
-			{
-				_engine?.Dispose();
-				_engine = null;
-			}
-
-			// TODO: free unmanaged resources (unmanaged objects) and override finalizer
-			// TODO: set large fields to null
-			disposedValue = true;
-		}
-	}
-
-	// // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-	// ~Registry()
-	// {
-	//     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-	//     Dispose(disposing: false);
-	// }
 }
