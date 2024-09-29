@@ -8,7 +8,7 @@ pr:
     include:
       - src/*
       - tests/*
-      - Directory.Packages.Props
+      - Directory.Packages.props
 pool:
   vmImage: 'ubuntu-latest'
 
