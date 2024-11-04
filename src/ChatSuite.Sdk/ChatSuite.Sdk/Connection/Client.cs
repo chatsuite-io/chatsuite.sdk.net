@@ -170,8 +170,8 @@ internal class Client : IClient
 		return false;
 	}
 
+	public Task CreateSecureGroupAsync(CancellationToken cancellationToken) => _hubConnection!.SendAsync(ServerMethods.CreateSecureGroup.ToString(), cancellationToken);
 	public Task StopAsync(CancellationToken cancellationToken) => _hubConnection?.StopAsync(cancellationToken) ?? Task.CompletedTask;
-
 	public IEvent AcquireUserConnectedEvent() => _messageHandlers[TargetEvent.OnUserConnected.ToString()].Event;
 	public IEvent AcquireUserDisconnectedEvent() => _messageHandlers[TargetEvent.OnUserDisconnected.ToString()].Event;
 	public IEvent AcquireUserMessageDeliveredEvent() => _messageHandlers[TargetEvent.MessageDeliveredToUser.ToString()].Event;
