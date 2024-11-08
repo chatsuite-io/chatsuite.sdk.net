@@ -16,6 +16,8 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	private const string PubPrivateDictionaryKey = "key";
 	private const string SystemUserId1 = "systemuserid1";
 	private const string SystemUserId2 = "systemuserid2";
+	private const string SecureGroupSpace = "space400";
+	private const string SecureGroupSuite = "suite400";
 
 	[Fact, TestOrder(1)]
 	public async Task AcquireDaemonJwtTokenAsync()
@@ -235,8 +237,6 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	[Fact, TestOrder(60)]
 	public async Task CreateSecureGroupAsync()
 	{
-		const string Space = "space400";
-		const string Suite = "suite400";
 		await using var client = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
@@ -244,12 +244,32 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 			Metadata = new()
 			{
 				ClientId = Guid.NewGuid().ToString(),
-				Suite = Suite,
-				SpaceId = Space
+				Suite = SecureGroupSuite,
+				SpaceId = SecureGroupSpace
 			}
 		});
 		await client!.ConnectAsync(CancellationToken.None);
 		await client!.CreateSecureGroupAsync(CancellationToken.None);
+		await Task.Delay(2000);
+		Assert.Equal(1, 1);
+	}
+
+	[Fact, TestOrder(70)]
+	public async Task RemoveSecureGroupAsync()
+	{
+		await using var client = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, new ConnectionParameters
+		{
+			Id = Guid.NewGuid().ToString(),
+			User = Guid.NewGuid().ToString(),
+			Metadata = new()
+			{
+				ClientId = Guid.NewGuid().ToString(),
+				Suite = SecureGroupSuite,
+				SpaceId = SecureGroupSpace
+			}
+		});
+		await client!.ConnectAsync(CancellationToken.None);
+		await client!.RemoveSecureGroupAsync(CancellationToken.None);
 		await Task.Delay(2000);
 		Assert.Equal(1, 1);
 	}

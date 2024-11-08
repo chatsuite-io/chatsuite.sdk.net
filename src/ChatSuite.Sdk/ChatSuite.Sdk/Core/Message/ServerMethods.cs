@@ -16,5 +16,6 @@ public enum ServerMethods
 	AcquireEncryptionPublicKey,
 	ShareEncryptionPublicKey,
 	UserConnectionStatus,
-	CreateSecureGroup
+	CreateSecureGroup,
+	RemoveSecureGroup
 }
