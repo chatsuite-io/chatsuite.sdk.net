@@ -18,6 +18,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	private const string SystemUserId2 = "systemuserid2";
 	private const string SecureGroupSpace = "space400";
 	private const string SecureGroupSuite = "suite400";
+	private const string UserKey = "user";
 
 	[Fact, TestOrder(1)]
 	public async Task AcquireDaemonJwtTokenAsync()
@@ -257,10 +258,11 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	[Fact, TestOrder(65)]
 	public async Task AddUserToSecureGroupAsync()
 	{
+		var userId = Guid.NewGuid().ToString();
 		await using var client = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
-			User = Guid.NewGuid().ToString(),
+			User =userId,
 			Metadata = new()
 			{
 				ClientId = Guid.NewGuid().ToString(),
@@ -269,12 +271,33 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 			}
 		});
 		await client!.ConnectAsync(CancellationToken.None);
-		await client!.AddUserToSecureGroupAsync(CancellationToken.None);
+		await client!.AddToSecureGroupAsync(CancellationToken.None);
+		await Task.Delay(2000);
+		Assert.Equal(1, 1);
+		_fixture.Data[UserKey] = userId;
+	}
+
+	[Fact, TestOrder(70)]
+	public async Task RemoveUserFromSecureGroupAsync()
+	{
+		await using var client = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, new ConnectionParameters
+		{
+			Id = Guid.NewGuid().ToString(),
+			User = (string)_fixture.Data[UserKey],
+			Metadata = new()
+			{
+				ClientId = Guid.NewGuid().ToString(),
+				Suite = SecureGroupSuite,
+				SpaceId = SecureGroupSpace
+			}
+		});
+		await client!.ConnectAsync(CancellationToken.None);
+		await client!.RemoveFromSecureGroupAsync(CancellationToken.None);
 		await Task.Delay(2000);
 		Assert.Equal(1, 1);
 	}
 
-	[Fact, TestOrder(70)]
+	[Fact, TestOrder(75)]
 	public async Task RemoveSecureGroupAsync()
 	{
 		await using var client = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, new ConnectionParameters

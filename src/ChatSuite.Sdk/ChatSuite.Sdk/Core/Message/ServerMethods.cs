@@ -18,5 +18,6 @@ public enum ServerMethods
 	UserConnectionStatus,
 	CreateSecureGroup,
 	RemoveSecureGroup,
-	AddUserToSecureGroup
+	AddUserToSecureGroup,
+	RemoveUserFromSecureGroup
 }

@@ -32,7 +32,8 @@ public interface IClient : IAsyncDisposable, IDisposable
 	Task<bool> ReportStatusToGroupAsync(StatusDetails statusDetails, CancellationToken cancellationToken);
 	Task CreateSecureGroupAsync(CancellationToken cancellationToken);
 	Task RemoveSecureGroupAsync(CancellationToken cancellationToken);
-	Task AddUserToSecureGroupAsync(CancellationToken cancellationToken);
+	Task AddToSecureGroupAsync(CancellationToken cancellationToken);
+	Task RemoveFromSecureGroupAsync(CancellationToken cancellationToken);
 #if DEBUG
 	Task<string?> RequestPublicKeyAsync(string recipient, CancellationToken cancellationToken, int requestLifetimeInMilliseconds = 10000);
 	Task<bool> IsUserOnlineAsync(string otherChatParty, CancellationToken cancellationToken, int requestLifetimeInMilliseconds = 10000);
