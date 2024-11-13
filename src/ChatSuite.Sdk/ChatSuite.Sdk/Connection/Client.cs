@@ -172,6 +172,7 @@ internal class Client : IClient
 
 	public Task CreateSecureGroupAsync(CancellationToken cancellationToken) => _hubConnection!.SendAsync(ServerMethods.CreateSecureGroup.ToString(), cancellationToken);
 	public Task RemoveSecureGroupAsync(CancellationToken cancellationToken) => _hubConnection!.SendAsync(ServerMethods.RemoveSecureGroup.ToString(), cancellationToken);
+	public Task AddUserToSecureGroupAsync(CancellationToken cancellationToken) => _hubConnection!.SendAsync(ServerMethods.AddUserToSecureGroup.ToString(), cancellationToken);
 	public Task StopAsync(CancellationToken cancellationToken) => _hubConnection?.StopAsync(cancellationToken) ?? Task.CompletedTask;
 	public IEvent AcquireUserConnectedEvent() => _messageHandlers[TargetEvent.OnUserConnected.ToString()].Event;
 	public IEvent AcquireUserDisconnectedEvent() => _messageHandlers[TargetEvent.OnUserDisconnected.ToString()].Event;

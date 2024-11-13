@@ -254,6 +254,26 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 		Assert.Equal(1, 1);
 	}
 
+	[Fact, TestOrder(65)]
+	public async Task AddUserToSecureGroupAsync()
+	{
+		await using var client = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, new ConnectionParameters
+		{
+			Id = Guid.NewGuid().ToString(),
+			User = Guid.NewGuid().ToString(),
+			Metadata = new()
+			{
+				ClientId = Guid.NewGuid().ToString(),
+				Suite = SecureGroupSuite,
+				SpaceId = SecureGroupSpace
+			}
+		});
+		await client!.ConnectAsync(CancellationToken.None);
+		await client!.AddUserToSecureGroupAsync(CancellationToken.None);
+		await Task.Delay(2000);
+		Assert.Equal(1, 1);
+	}
+
 	[Fact, TestOrder(70)]
 	public async Task RemoveSecureGroupAsync()
 	{
