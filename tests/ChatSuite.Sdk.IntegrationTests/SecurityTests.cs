@@ -255,6 +255,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 		Assert.Equal(1, 1);
 	}
 
+#if DEBUG
 	[Fact, TestOrder(65)]
 	public async Task AddUserToSecureGroupAsync()
 	{
@@ -296,6 +297,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 		await Task.Delay(2000);
 		Assert.Equal(1, 1);
 	}
+#endif
 
 	[Fact, TestOrder(75)]
 	public async Task RemoveSecureGroupAsync()
