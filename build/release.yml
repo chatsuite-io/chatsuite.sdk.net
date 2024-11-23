@@ -1,7 +1,7 @@
 variables:
   Major: 1
-  Minor: 2
-  Rev: 3
+  Minor: 3
+  Rev: 0
   BuildConfiguration: Release
 
 name: $(Major).$(Minor).$(Rev)
@@ -25,7 +25,7 @@ steps:
   displayName: 'Installing .NET SDK 8.0'
   inputs:
     packageType: sdk
-    version: 8.0.403
+    version: 9.0.100
     installationPath: $(Agent.ToolsDirectory)/dotnet
 
 - task: DotNetCoreCLI@2
