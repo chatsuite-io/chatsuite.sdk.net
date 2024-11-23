@@ -10,5 +10,6 @@ public enum TargetEvent
 	UserStatusReported,
 	AcquireEncryptionPublicKey,
 	PublicKeyReceived,
-	OnlineOfflineStatusReported
+	OnlineOfflineStatusReported,
+	GroupUsersDelivered
 }

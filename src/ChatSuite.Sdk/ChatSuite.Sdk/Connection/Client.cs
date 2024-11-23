@@ -17,6 +17,7 @@ internal class Client : IClient
 	public IPlugin<(string encryptionPublicKey, string stringToEncrypt), string>? EncryptionPlugin { private get; init; }
 	internal string? SystemUserId { private get; set; }
 	public IRegistry<CipherKeysTracker>? CipherKeysRegistry { private get; init; }
+	public IRegistry<SecureGroupUsers> SecureGroupUsersRegistry { private get; init; }
 	public IPlugin<MessageBase, string>? SystemUserIdProviderPlugin { get; init; }
 
 	public void Build()
@@ -105,6 +106,25 @@ internal class Client : IClient
 		return false;
 	}
 
+	public Task SendEncryptedMessageToSecureGroupOfUsersAsync(string groupName, ChatMessage message, CancellationToken cancellationToken)
+	{
+#warning The group name must be base64 format
+		var group = SecureGroupUsersRegistry[groupName];
+		if (group?.Users is not null)
+		{
+			var tasks = new List<Task>();
+			foreach (var user in group.Users)
+			{
+				cancellationToken.ThrowIfCancellationRequested();
+
+#warning The 'user' must not be a base64 entity
+				tasks.Add(SendEncryptedMessageToUserAsync(user, message, cancellationToken));
+			}
+			return Task.WhenAll(tasks);
+		}
+		return Task.CompletedTask;
+	}
+
 
 	public async Task<bool> SendMessageToGroupAsync(ChatMessage message, CancellationToken cancellationToken)
 	{
@@ -170,8 +190,11 @@ internal class Client : IClient
 		return false;
 	}
 
+	public Task CreateSecureGroupAsync(CancellationToken cancellationToken) => _hubConnection!.SendAsync(ServerMethods.CreateSecureGroup.ToString(), cancellationToken);
+	public Task RemoveSecureGroupAsync(CancellationToken cancellationToken) => _hubConnection!.SendAsync(ServerMethods.RemoveSecureGroup.ToString(), cancellationToken);
+	public Task AddToSecureGroupAsync(CancellationToken cancellationToken) => _hubConnection!.SendAsync(ServerMethods.AddUserToSecureGroup.ToString(), cancellationToken);
+	public Task RemoveFromSecureGroupAsync(CancellationToken cancellationToken) => _hubConnection!.SendAsync(ServerMethods.RemoveUserFromSecureGroup.ToString(), cancellationToken);
 	public Task StopAsync(CancellationToken cancellationToken) => _hubConnection?.StopAsync(cancellationToken) ?? Task.CompletedTask;
-
 	public IEvent AcquireUserConnectedEvent() => _messageHandlers[TargetEvent.OnUserConnected.ToString()].Event;
 	public IEvent AcquireUserDisconnectedEvent() => _messageHandlers[TargetEvent.OnUserDisconnected.ToString()].Event;
 	public IEvent AcquireUserMessageDeliveredEvent() => _messageHandlers[TargetEvent.MessageDeliveredToUser.ToString()].Event;

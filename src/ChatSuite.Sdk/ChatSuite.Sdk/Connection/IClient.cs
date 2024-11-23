@@ -25,11 +25,16 @@ public interface IClient : IAsyncDisposable, IDisposable
 	Task<bool> SendMessageToUserAsync(string recipient, ChatMessage message, CancellationToken cancellationToken);
 	Task<bool> SendEncryptedMessageToUserAsync(string recipient, ChatMessage message, CancellationToken cancellationToken);
 	Task<bool> SendMessageToGroupAsync(ChatMessage message, CancellationToken cancellationToken);
+	Task SendEncryptedMessageToSecureGroupOfUsersAsync(string groupName, ChatMessage message, CancellationToken cancellationToken);
 	Task<bool> SendMessageToGroupAsync(ChatMessage message, IPlugin<(string encryptionPublicKey, string stringToEncrypt), string> encryptionPlugin, CancellationToken cancellationToken, Action<IEnumerable<Response.Error>?>? onError = null);
 	Task<bool> AddUserToGroupAsync(string username, CancellationToken cancellationToken);
 	Task<bool> RemoveUserFromGroupAsync(string username, CancellationToken cancellationToken);
 	Task<bool> ReportStatusToUserAsync(string username, StatusDetails statusDetails, CancellationToken cancellationToken);
 	Task<bool> ReportStatusToGroupAsync(StatusDetails statusDetails, CancellationToken cancellationToken);
+	Task CreateSecureGroupAsync(CancellationToken cancellationToken);
+	Task RemoveSecureGroupAsync(CancellationToken cancellationToken);
+	Task AddToSecureGroupAsync(CancellationToken cancellationToken);
+	Task RemoveFromSecureGroupAsync(CancellationToken cancellationToken);
 #if DEBUG
 	Task<string?> RequestPublicKeyAsync(string recipient, CancellationToken cancellationToken, int requestLifetimeInMilliseconds = 10000);
 	Task<bool> IsUserOnlineAsync(string otherChatParty, CancellationToken cancellationToken, int requestLifetimeInMilliseconds = 10000);

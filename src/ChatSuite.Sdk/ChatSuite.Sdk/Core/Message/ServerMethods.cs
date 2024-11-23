@@ -15,5 +15,9 @@ public enum ServerMethods
 	GetOfflineUsers,
 	AcquireEncryptionPublicKey,
 	ShareEncryptionPublicKey,
-	UserConnectionStatus
+	UserConnectionStatus,
+	CreateSecureGroup,
+	RemoveSecureGroup,
+	AddUserToSecureGroup,
+	RemoveUserFromSecureGroup
 }

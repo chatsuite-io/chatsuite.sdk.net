@@ -16,6 +16,9 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	private const string PubPrivateDictionaryKey = "key";
 	private const string SystemUserId1 = "systemuserid1";
 	private const string SystemUserId2 = "systemuserid2";
+	private const string SecureGroupSpace = "space400";
+	private const string SecureGroupSuite = "suite400";
+	private const string UserKey = "user";
 
 	[Fact, TestOrder(1)]
 	public async Task AcquireDaemonJwtTokenAsync()
@@ -172,7 +175,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 	[Fact, TestOrder(40)]
 	public async Task SendEncryptedMessageAsync()
 	{
-		string OtherUser = Guid.NewGuid().ToString();
+		var otherUser = Guid.NewGuid().ToString();
 		const string Space = "space102";
 		const string Suite = "connectiontest102";
 		await using var client1 = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, new ConnectionParameters
@@ -189,7 +192,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 		var user2connection = new ConnectionParameters
 		{
 			Id = Guid.NewGuid().ToString(),
-			User = OtherUser,
+			User = otherUser,
 			Metadata = new()
 			{
 				ClientId = Guid.NewGuid().ToString(),
@@ -209,7 +212,7 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 			var result = await o;
 			messageReceived = result is not null;
 		};
-		var sent = await client1.SendEncryptedMessageToUserAsync(OtherUser, new ChatMessage { Id = Guid.NewGuid().ToString(), Body = [MessageToSend] }, CancellationToken.None);
+		var sent = await client1.SendEncryptedMessageToUserAsync(otherUser, new ChatMessage { Id = Guid.NewGuid().ToString(), Body = [MessageToSend] }, CancellationToken.None);
 		Assert.True(sent);
 		while (!messageReceived && !cancellationTokenSource.IsCancellationRequested){ }
 		Assert.True(messageReceived);
@@ -230,5 +233,89 @@ public class SecurityTests(ITestOutputHelper testOutputHelper, ReliableConnectio
 		Assert.Equal(1ul, registry.Count);
 		var record = registry[Key];
 		Assert.NotNull(record);
+	}
+
+	[Fact, TestOrder(60)]
+	public async Task CreateSecureGroupAsync()
+	{
+		await using var client = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, new ConnectionParameters
+		{
+			Id = Guid.NewGuid().ToString(),
+			User = Guid.NewGuid().ToString(),
+			Metadata = new()
+			{
+				ClientId = Guid.NewGuid().ToString(),
+				Suite = SecureGroupSuite,
+				SpaceId = SecureGroupSpace
+			}
+		});
+		await client!.ConnectAsync(CancellationToken.None);
+		await client!.CreateSecureGroupAsync(CancellationToken.None);
+		await Task.Delay(2000);
+		Assert.Equal(1, 1);
+	}
+
+#if DEBUG
+	[Fact, TestOrder(65)]
+	public async Task AddUserToSecureGroupAsync()
+	{
+		var userId = Guid.NewGuid().ToString();
+		await using var client = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, new ConnectionParameters
+		{
+			Id = Guid.NewGuid().ToString(),
+			User =userId,
+			Metadata = new()
+			{
+				ClientId = Guid.NewGuid().ToString(),
+				Suite = SecureGroupSuite,
+				SpaceId = SecureGroupSpace
+			}
+		});
+		await client!.ConnectAsync(CancellationToken.None);
+		await client!.AddToSecureGroupAsync(CancellationToken.None);
+		await Task.Delay(2000);
+		Assert.Equal(1, 1);
+		_fixture.Data[UserKey] = userId;
+	}
+
+	[Fact, TestOrder(70)]
+	public async Task RemoveUserFromSecureGroupAsync()
+	{
+		await using var client = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, new ConnectionParameters
+		{
+			Id = Guid.NewGuid().ToString(),
+			User = (string)_fixture.Data[UserKey],
+			Metadata = new()
+			{
+				ClientId = Guid.NewGuid().ToString(),
+				Suite = SecureGroupSuite,
+				SpaceId = SecureGroupSpace
+			}
+		});
+		await client!.ConnectAsync(CancellationToken.None);
+		await client!.RemoveFromSecureGroupAsync(CancellationToken.None);
+		await Task.Delay(2000);
+		Assert.Equal(1, 1);
+	}
+#endif
+
+	[Fact, TestOrder(75)]
+	public async Task RemoveSecureGroupAsync()
+	{
+		await using var client = await _fixture.GetClientAsync(_testOutputHelper, sustainInFixture: false, new ConnectionParameters
+		{
+			Id = Guid.NewGuid().ToString(),
+			User = Guid.NewGuid().ToString(),
+			Metadata = new()
+			{
+				ClientId = Guid.NewGuid().ToString(),
+				Suite = SecureGroupSuite,
+				SpaceId = SecureGroupSpace
+			}
+		});
+		await client!.ConnectAsync(CancellationToken.None);
+		await client!.RemoveSecureGroupAsync(CancellationToken.None);
+		await Task.Delay(2000);
+		Assert.Equal(1, 1);
 	}
 }

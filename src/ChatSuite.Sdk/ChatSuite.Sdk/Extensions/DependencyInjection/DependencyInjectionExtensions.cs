@@ -21,7 +21,8 @@ public static class DependencyInjectionExtensions
 		.AddKeyedTransient<IEvent, MessageDeliveredToUserEvent>(nameof(MessageDeliveredToUserEvent))
 		.AddKeyedTransient<IEvent, MessageDeliveredToGroupEvent>(nameof(MessageDeliveredToGroupEvent))
 		.AddKeyedTransient<IEvent, StatusReportReceivedEvent>(nameof(StatusReportReceivedEvent))
-		.AddKeyedTransient<IEvent, UserOnlineOfflineStatusReportReceived>(nameof(UserOnlineOfflineStatusReportReceived));
+		.AddKeyedTransient<IEvent, UserOnlineOfflineStatusReportReceived>(nameof(UserOnlineOfflineStatusReportReceived))
+		.AddKeyedTransient<IEvent, SecureGroupUsersDelivered>(nameof(SecureGroupUsersDelivered));
 
 	public static IServiceCollection AddEntraIdDaemonAccessTokenProvider(this IServiceCollection services, IConfiguration configuration) => services
 		.AddTransient<IAccessTokenProvider, EntraIdDaemonAccessTokenProvider>()
@@ -37,4 +38,7 @@ public static class DependencyInjectionExtensions
 
 	public static IServiceCollection AddEncryptionKeyRegistry(this IServiceCollection services) => services
 		.AddSingleton<IRegistry<CipherKeysTracker>, EncryptionKeyRegistry>();
+
+	public static IServiceCollection AddSecureGroupUsersRegistry(this IServiceCollection services) => services
+		.AddSingleton<IRegistry<SecureGroupUsers>, SecureGroupUsersRegistry>();
 }
