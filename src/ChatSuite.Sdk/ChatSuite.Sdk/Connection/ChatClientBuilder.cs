@@ -7,6 +7,7 @@ internal class ChatClientBuilder(
 	IAccessTokenProvider accessTokenProvider,
 	IValidator<ConnectionParameters> connectionParametersValidator,
 	IRegistry<CipherKeysTracker>? cipherKeysRegistry,
+	IRegistry<SecureGroupUsers> secureUsersGroupRegistry,
 	IPlugin<MessageBase, string> systemUserIdProviderPlugin,
 	[FromKeyedServices(Extensions.DependencyInjection.DependencyInjectionExtensions.EncryptionPluginKey)] IPlugin<(string encryptionPublicKey, string stringToEncrypt), string> encryptionPlugin,
 	[FromKeyedServices(nameof(UserConnectedEvent))] IEvent userConnectedEvent,
@@ -16,7 +17,8 @@ internal class ChatClientBuilder(
 	[FromKeyedServices(nameof(MessageDeliveredToUserEvent))] IEvent messageDeliveredToUserEvent,
 	[FromKeyedServices(nameof(MessageDeliveredToGroupEvent))] IEvent messageDeliveredToGroupEvent,
 	[FromKeyedServices(nameof(StatusReportReceivedEvent))] IEvent statusReportReceivedEvent,
-	[FromKeyedServices(nameof(UserOnlineOfflineStatusReportReceived))] IEvent userStatusReportReceivedEvent) : Plugin<ConnectionParameters, IClient?>, IInputValidator
+	[FromKeyedServices(nameof(UserOnlineOfflineStatusReportReceived))] IEvent userStatusReportReceivedEvent,
+	[FromKeyedServices(nameof(SecureGroupUsersDelivered))] IEvent secureGroupUsersDelivered) : Plugin<ConnectionParameters, IClient?>, IInputValidator
 {
 	public List<string> RuleSets => [];
 
@@ -38,6 +40,7 @@ internal class ChatClientBuilder(
 					SystemUserId = systemUserId.Result!,
 					EncryptionPlugin = encryptionPlugin,
 					CipherKeysRegistry = cipherKeysRegistry,
+					SecureGroupUsersRegistry = secureUsersGroupRegistry,
 					SystemUserIdProviderPlugin = systemUserIdProviderPlugin
 				};
 				client.Build();
@@ -49,7 +52,8 @@ internal class ChatClientBuilder(
 					.RegisterEvent(messageDeliveredToUserEvent)
 					.RegisterEvent(messageDeliveredToGroupEvent)
 					.RegisterEvent(statusReportReceivedEvent)
-					.RegisterEvent(userStatusReportReceivedEvent);
+					.RegisterEvent(userStatusReportReceivedEvent)
+					.RegisterEvent(secureGroupUsersDelivered);
 			}
 			catch (Exception ex)
 			{

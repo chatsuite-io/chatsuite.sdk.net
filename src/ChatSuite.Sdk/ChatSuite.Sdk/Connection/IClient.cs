@@ -25,6 +25,7 @@ public interface IClient : IAsyncDisposable, IDisposable
 	Task<bool> SendMessageToUserAsync(string recipient, ChatMessage message, CancellationToken cancellationToken);
 	Task<bool> SendEncryptedMessageToUserAsync(string recipient, ChatMessage message, CancellationToken cancellationToken);
 	Task<bool> SendMessageToGroupAsync(ChatMessage message, CancellationToken cancellationToken);
+	Task SendEncryptedMessageToSecureGroupOfUsersAsync(string groupName, ChatMessage message, CancellationToken cancellationToken);
 	Task<bool> SendMessageToGroupAsync(ChatMessage message, IPlugin<(string encryptionPublicKey, string stringToEncrypt), string> encryptionPlugin, CancellationToken cancellationToken, Action<IEnumerable<Response.Error>?>? onError = null);
 	Task<bool> AddUserToGroupAsync(string username, CancellationToken cancellationToken);
 	Task<bool> RemoveUserFromGroupAsync(string username, CancellationToken cancellationToken);

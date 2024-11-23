@@ -17,6 +17,7 @@ internal class Client : IClient
 	public IPlugin<(string encryptionPublicKey, string stringToEncrypt), string>? EncryptionPlugin { private get; init; }
 	internal string? SystemUserId { private get; set; }
 	public IRegistry<CipherKeysTracker>? CipherKeysRegistry { private get; init; }
+	public IRegistry<SecureGroupUsers> SecureGroupUsersRegistry { private get; init; }
 	public IPlugin<MessageBase, string>? SystemUserIdProviderPlugin { get; init; }
 
 	public void Build()
@@ -103,6 +104,25 @@ internal class Client : IClient
 			}
 		}
 		return false;
+	}
+
+	public Task SendEncryptedMessageToSecureGroupOfUsersAsync(string groupName, ChatMessage message, CancellationToken cancellationToken)
+	{
+#warning The group name must be base64 format
+		var group = SecureGroupUsersRegistry[groupName];
+		if (group?.Users is not null)
+		{
+			var tasks = new List<Task>();
+			foreach (var user in group.Users)
+			{
+				cancellationToken.ThrowIfCancellationRequested();
+
+#warning The 'user' must not be a base64 entity
+				tasks.Add(SendEncryptedMessageToUserAsync(user, message, cancellationToken));
+			}
+			return Task.WhenAll(tasks);
+		}
+		return Task.CompletedTask;
 	}
 
 
