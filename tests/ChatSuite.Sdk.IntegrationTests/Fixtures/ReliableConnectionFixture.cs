@@ -41,7 +41,8 @@ public class ReliableConnectionFixture : TestBedFixture
 		.AddEntraIdDaemonAccessTokenProvider(configuration)
 		.AddEncryptionPlugins()
 		.AddDecryptionPlugins()
-		.AddEncryptionKeyRegistry();
+		.AddEncryptionKeyRegistry()
+		.AddSecureGroupUsersRegistry();
 
 	protected override ValueTask DisposeAsyncCore() => _client?.DisposeAsync() ?? new();
 
